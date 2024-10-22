@@ -24,7 +24,31 @@ git config --global user.name "BeliebigerName"
 
 Wenn du nun was im Projekt in VSCode änderst und einen Commit machst (Source Control -> Commit) solltest du beim ersten mal aufgefordert werden, dich auf GitHub zu verifizieren. Folge den Anweisungen.
 
-### Hinweise
+### Hinweise zu Version Control
 - Statt dem Source Control in VSCode kann auch z.B. GitHub Desktop benutzt werden
 
 - Änderungen die du am Projekt machst, uploadest du durch einen Commit. Commits brauchen immer Commit Messages
+
+## Python und Virtual Environment in VSCode nutzen
+
+Lade dir [Python](https://www.python.org/downloads/) runter und starte VSCode. Es ist wichtig bei der Installation von Python die Option "Add Python To Environment Variables" zu aktivieren!
+
+Installiere in VSCode die Erweiterung "Python". Erweiterungen kannst du im fünften Symbol in der linken Leiste installieren.
+
+Drücke Strg+Shift+P und wähle "Python: Create Environment" -> "Venv" -> "Python... (Global)" -> "requirement.txt"
+
+### Hinweise zu Pip und Bibliotheken in Python
+Durch dieses Setup werden einmal alle Libraries aus der "requirements.txt" installiert. Während des Projekts werden immer wieder Libraries hinzukommen.
+
+Libraries können mit pip installiert werden, z.B. `pip install numpy`.
+
+Wenn du eine Library erstellst, update die "requirements.txt" mit diesem Befehl in der Kommandozeile von VSCode:
+```
+pip freeze > requirement.txt
+```
+
+Wenn du nicht alle Libraries installiert hast, kannst du folgenden Befehl benutzen:
+```
+pip install -r requirement.txt
+```
+
