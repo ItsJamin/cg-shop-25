@@ -4,7 +4,7 @@ import os
 sys.path.append(os.getcwd())
 
 from inpout import load_problem
-from instance import plot_instance
+from plotting import plot_instance
 import matplotlib.pyplot as plt
 
 
