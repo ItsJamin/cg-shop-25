@@ -1,5 +1,5 @@
 from matplotlib.axes import Axes
-from inpout.instance import Problem
+from inpout.__init__ import Problem
 
 def plot_instance(ax: Axes, instance: Problem) -> Axes:
     
