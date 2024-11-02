@@ -10,7 +10,7 @@ def load_problem(filename):
     # TODO: Aus JSON ein Instanz-Objekt machen
     problem_instance = Problem(data)
         
-    return problem_instance.points_x
+    return problem_instance
 
 def save_result(result):
     # TODO: aus Result Objekt eine Result Datei machen
