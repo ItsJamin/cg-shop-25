@@ -1,6 +1,6 @@
 import json
 
-from .instance import Problem
+from instance import Problem
 
 # Erstelle eine Instanz vom Problem
 def load_problem(filename):
