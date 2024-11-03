@@ -1,8 +1,11 @@
+from inpout import load_problem, Problem
+import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
-from inpout.__init__ import Problem
 
-def plot_instance(ax: Axes, instance: Problem) -> Axes:
+def plot_problem(instance: Problem) -> Axes:
     
+    fig, ax = plt.subplots()
+
     ax.scatter(instance.points_x, instance.points_y, color="black")
     
     
@@ -29,4 +32,5 @@ def plot_instance(ax: Axes, instance: Problem) -> Axes:
     
     ax.set_aspect("equal")
     ax.set_title(instance.instance_uid)
-    return ax
+
+    plt.show()

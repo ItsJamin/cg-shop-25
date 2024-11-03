@@ -15,6 +15,3 @@ def load_problem(filename):
 def save_result(result):
     # TODO: aus Result Objekt eine Result Datei machen
     pass
-
-
-print(load_problem("test.json"))
