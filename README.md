@@ -52,3 +52,36 @@ Wenn du nicht alle Libraries installiert hast, kannst du folgenden Befehl benutz
 pip install -r requirement.txt
 ```
 
+# Hilfestellung zum Programmieren
+
+```
+- assets
+|
+- inpout        <-- "Modul", hier z.B. für Input und Output
+| - __init__.py <-- Welche Modulfunktionen/-variablen exportieren 
+| - ...
+- instance      <-- "Modul" für die Interne Darstellung von Problem und Lösung
+| - __init__.py
+| - ...
+| ...
+| debug.py      <-- Testen von Funktion der "Module"
+```
+
+
+### 1. Klarheit vor Kürze
+
+Code sollte immer so geschrieben sein, dass er ohne Kommentare verständlich ist. Lieber ein paar Zeilen mehr als kryptische Abkürzungen.
+
+Auch die Bennenung von Variablen oder Dateien sollte direkt ihre Funktion erklären.
+
+### 2. DRY (Don't Repeat Yourself)
+
+Vermeide Redundanz und nutze Wiederverwendbarkeit: Erstelle Funktionen und Module, wenn du den gleichen Code mehrfach verwendest.
+
+### 3. Prinzip der einzigen Verantwortung
+
+Jede Klasse oder Funktion sollte nur eine einzige Aufgabe oder Verantwortung haben, also keine Nebeneffekte produzieren.
+
+### 4. Future-Proof Code
+
+Schreibe deinen Code so, dass zukünftige Anpassungen und Erweiterungen einfach implementiert werden können. Vermeide harte Abhängigkeiten und halte den Code flexibel.
