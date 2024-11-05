@@ -16,6 +16,6 @@ if __name__ == '__main__':
 
     # So auch
 
-    problem = inp.load_problem("test.json")
+    problem = inp.load_problem("cgshop2025_examples_simple-polygon-exterior_10_34daa0f6.instance.json")
 
     vis.plot_problem(problem)

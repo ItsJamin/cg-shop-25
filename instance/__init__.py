@@ -1,2 +1,2 @@
-from .Problem import Problem
-from .Result import Result
+from .problem import Problem
+from .result import Result
