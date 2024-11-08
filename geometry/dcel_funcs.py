@@ -6,10 +6,10 @@ def create_full_edge(point1 : Vertex, point2 : Vertex):
     Erstellt Zwillings-HalfEdges und gibt Pointer auf den mit Origin p1 zurück.
     """
 
-    edge1 = HalfEdge(point1, point2)
-    edge2 = HalfEdge(point2, point1, edge1)
+    edge1 = HalfEdge(point1)
+    edge2 = HalfEdge(point2, edge1)
 
-    return edge1,
+    return edge1
 
 def connect_edges(edge1, edge2):
     """
