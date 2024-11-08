@@ -14,7 +14,7 @@ class Vertex:
         return np.array([self.x, self.y])
 
     def __repr__(self):
-        return f"Vertex({self.x}, {self.y})"
+        return f"({self.x}, {self.y})"
 
 class HalfEdge:
     
@@ -49,7 +49,10 @@ class HalfEdge:
         return np.linalg.norm(self.direction())
 
     def __repr__(self):
-        return f"HalfEdge(origin={self.origin})"
+        if self.twin:
+            return f"({self.origin}) -> ({self.twin.origin})"
+        else:
+            return f"({self.origin}) -> None"
 
 class Face:
     def __init__(self, edge ):

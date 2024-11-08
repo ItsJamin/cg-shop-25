@@ -13,7 +13,7 @@ if __name__ == '__main__':
     d = c.twin
     for _ in range(len(problem.region_boundary)+1):
         if c.next is not None:
-            print(f"{c.origin} {d.origin}")
+            print(f"{c} {d}")
 
             c = c.next
             d = d.next
