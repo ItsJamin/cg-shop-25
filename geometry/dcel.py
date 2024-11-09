@@ -47,6 +47,9 @@ class HalfEdge:
     def length(self):
         """Berechnet die euklidische Länge der Kante."""
         return np.linalg.norm(self.direction())
+    
+    def has_twin(self):
+        return self.twin is not None
 
     def __repr__(self):
         if self.twin:
@@ -55,5 +58,5 @@ class HalfEdge:
             return f"({self.origin}) -> None"
 
 class Face:
-    def __init__(self, edge ):
+    def __init__(self, edge):
         self.edge = None

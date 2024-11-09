@@ -17,7 +17,7 @@ def connect_edges(edge1, edge2):
     edge1 -> Point -> edge2
     """
 
-    if edge1.twin is None or edge2.twin is None:
+    if not edge1.has_twin() and edge2.has_twin():
         raise Exception("Can't connect unfinished edges. One of the HalfEdges has no twin.")
 
     if edge1.twin.origin != edge2.origin:
