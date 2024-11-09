@@ -54,18 +54,36 @@ pip install -r requirement.txt
 
 # Hilfestellung zum Programmieren
 
+### Interne Struktur
+
 ```
-- assets
+- assets            <-- Enthält die Aufgaben .json
 |
-- inpout        <-- "Modul", hier z.B. für Input und Output
-| - __init__.py <-- Welche Modulfunktionen/-variablen exportieren 
+- inpout            <-- "Modul", hier z.B. für Input und Output
+| - __init__.py     <-- Welche Modulfunktionen/-variablen exportieren 
 | - ...
-- instance      <-- "Modul" für die Interne Darstellung von Problem und Lösung
+- instance          <-- "Modul" für die Interne Darstellung vom Problem
 | - __init__.py
 | - ...
 | ...
-| debug.py      <-- Testen von Funktion der "Module"
+| debug.py          <-- Testen von Funktion der "Module"
+| demonstration.py  <-- Beispiel für Verständnis
 ```
+
+Ausführbare Dateien (z.B. `debug.py`) liegen im Hauptordner, während die logische Trennung der "Module" durch die Ordner passieren.
+
+Die "Module":
+- geometry:
+    - Mathematische Repräsentation des Problems (DCEL)
+    - Hilfsfunktionen
+    - Grundlage für die Berechnung des Algorithmus
+- instance:
+    - Interne Repräsentation des Problem und dessen Attribute
+- inpout:
+    - Schnittstelle zwischen JSON-Dateien und instance
+- visualization:
+    - Visualisierung des Problems
+    - Animation des Algorithmus
 
 
 ### 1. Klarheit vor Kürze
