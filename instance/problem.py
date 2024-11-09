@@ -1,4 +1,5 @@
 import geometry as geo
+import numpy as np
 
 class Problem():
 
@@ -14,6 +15,10 @@ class Problem():
         self.g_points = []
         self.g_region_boundary = None
         self.g_num_constraints = None
+
+        self.v_elements = [] # Liste der zu animierenden Elemente
+
+        self.create_geometry()
     
     def create_geometry(self):
 
@@ -52,5 +57,22 @@ class Problem():
     def validate_problem(self):
         # TODO: Validiere dass das Problem korrekt formuliert ist
         pass
+
+    def step(self, object, color="orange"):
+        """
+        Diese Funktion fügt ein Objekt zur Liste der zu animierenden Elemente hinzu.
+
+        Parameter:
+        - object (Vertex oder HalfEdge): Das zu animierende Objekt.
+        - color (str, optional): Die Farbe des Objekts in der Animation. Standardmäßig "orange"
+        """
+        points = None
+        if type(object) == geo.Vertex:
+            points = object.position()
+        elif type(object) == geo.HalfEdge and object.has_twin():
+            points = np.concatenate([object.origin.position(),object.twin.origin.position()])
+        else:
+            raise Exception("Non-Animatible Object. Only Vertex or HalfEdge with twin")
     
+        self.v_elements.append((points, color))
 

@@ -1,8 +1,8 @@
-from inpout import load_problem, Problem
+from inpout import Problem
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
+from matplotlib.animation import FuncAnimation
 
-def plot_problem(instance: Problem) -> Axes:
+def plot_problem(instance: Problem):
     
     fig, ax = plt.subplots()
 
@@ -33,4 +33,21 @@ def plot_problem(instance: Problem) -> Axes:
     ax.set_aspect("equal")
     ax.set_title(instance.instance_uid)
 
+    return fig, ax
+
+def animate_algorithm(instance: Problem):
+
+    # Nehme das visualisierte Problem als Vorlage
+    fig, ax = plot_problem(instance)
+
+    def update(data):
+        # Schrittweise Vertices oder Linien zeichnen
+        points, color = data[0], data[1]
+        if len(points) == 2:
+            ax.scatter(points[0], points[1], color = color)
+        elif len(points) == 4:
+            ax.plot([points[0], points[2]], [points[1], points[3]], color=color, linestyle="-")
+
+    # Animation erstellen
+    ani = FuncAnimation(fig, update, frames=instance.v_elements, repeat=False)
     plt.show()
