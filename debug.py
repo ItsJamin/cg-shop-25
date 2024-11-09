@@ -19,6 +19,3 @@ if __name__ == '__main__':
             d = d.next
         else:
             print(f"ERROR {c.next, d.next}")
-
-    #vis.plot_problem(problem)
-

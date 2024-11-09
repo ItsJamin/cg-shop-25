@@ -35,7 +35,10 @@ def plot_problem(instance: Problem):
 
     return fig, ax
 
-def animate_algorithm(instance: Problem):
+def animate_algorithm(instance: Problem, interval : int = 400):
+    """
+    Animiert die (Lösungs-)Schritte in einem Problem mit Warteintervallen in Millisekunden.
+    """
 
     # Nehme das visualisierte Problem als Vorlage
     fig, ax = plot_problem(instance)
@@ -49,5 +52,5 @@ def animate_algorithm(instance: Problem):
             ax.plot([points[0], points[2]], [points[1], points[3]], color=color, linestyle="-")
 
     # Animation erstellen
-    ani = FuncAnimation(fig, update, frames=instance.v_elements, repeat=False)
+    ani = FuncAnimation(fig, update, frames=instance.v_elements, repeat=False, interval = interval)
     plt.show()

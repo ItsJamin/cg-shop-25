@@ -14,7 +14,7 @@ class Problem():
 
         self.g_points = []
         self.g_region_boundary = None
-        self.g_num_constraints = None
+        self.g_constraints = None
 
         self.v_elements = [] # Liste der zu animierenden Elemente
 
@@ -24,7 +24,7 @@ class Problem():
 
         self.g_points = []
         self.g_region_boundary = None
-        self.g_num_constraints = None
+        self.g_constraints = None
         
         # Erstellen der Punkte
         for x,y in zip(self.points_x,self.points_y):
