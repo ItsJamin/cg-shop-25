@@ -14,7 +14,7 @@ class Problem():
 
         self.g_points = []
         self.g_region_boundary = None
-        self.g_constraints = None
+        self.g_constraints = []
 
         self.v_elements = [] # Liste der zu animierenden Elemente
 
@@ -24,7 +24,7 @@ class Problem():
 
         self.g_points = []
         self.g_region_boundary = None
-        self.g_constraints = None
+        self.g_constraints = []
         
         # Erstellen der Punkte
         for x,y in zip(self.points_x,self.points_y):
@@ -49,10 +49,12 @@ class Problem():
             last_edge = current
         
         geo.connect_edges(last_edge, self.g_region_boundary)
-        
-        
 
-    
+        # Additional-Constraints als HalfEdge-Verkettung realisieren 
+        for constraint in self.additional_constraints:
+            a, b = constraint
+            edge = geo.create_full_edge(self.g_points[a], self.g_points[b])
+            self.g_constraints.append(edge)
 
     def validate_problem(self):
         # TODO: Validiere dass das Problem korrekt formuliert ist
