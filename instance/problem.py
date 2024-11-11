@@ -50,11 +50,12 @@ class Problem():
         
         geo.connect_edges(last_edge, self.g_region_boundary)
 
-        # Additional-Constraints als HalfEdge-Verkettung realisieren 
+        # Additional-Constraints als HalfEdge-Verkettung realisieren
         for constraint in self.additional_constraints:
             a, b = constraint
-            edge = geo.create_full_edge(self.g_points[a], self.g_points[b])
-            self.g_constraints.append(edge)
+            edge1 = geo.create_full_edge(self.g_points[a], self.g_points[b])
+            edge2 = edge1.twin
+            self.g_constraints.append(edge1)
 
     def validate_problem(self):
         # TODO: Validiere dass das Problem korrekt formuliert ist

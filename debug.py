@@ -19,3 +19,19 @@ if __name__ == '__main__':
             d = d.next
         else:
             print(f"ERROR {c.next, d.next}")
+
+    ################################
+    print(problem.additional_constraints)
+    problem.create_geometry()
+
+    for constraint_edge in problem.g_constraints:
+        c = constraint_edge
+        d = c.twin
+        while c is not None:
+            print(f"{c} -> {d}")
+
+            problem.step(c, color="blue")
+            problem.step(d, color="blue")
+
+            c = c.next
+            d = d.next
