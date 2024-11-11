@@ -30,8 +30,10 @@ if __name__ == '__main__':
         while c is not None:
             print(f"{c} -> {d}")
 
-            problem.step(c, color="blue")
-            problem.step(d, color="blue")
+            problem.step(c, color="green")
+            problem.step(d, color="green")
 
             c = c.next
             d = d.next
+    print(problem.g_constraints)
+    vis.animate_algorithm(problem, interval = 500)
