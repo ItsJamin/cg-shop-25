@@ -20,13 +20,17 @@ class HalfEdge:
     
     def __init__(self, 
                  origin: "Vertex", 
+                 endpoint : "Vertex" = None,
                  twin : "HalfEdge" = None,
                  next : "HalfEdge" = None,
                  prev : "HalfEdge" = None,
                  face : "Face" = None,
-                 endpoint : "Vertex" = None
                  ):
-        """Zwei HalfEdges mit gegensätzlicher Richtung repräsentieren eine Linie. Origin Punkt dient um Richtung darzustellen."""
+        """
+        Zwei HalfEdges mit gegensätzlicher Richtung repräsentieren eine Linie. Origin Punkt dient um Richtung darzustellen.
+
+        `twin` oder `endpoint` muss gesetzt sein, um eine volle Kante zu setzen.
+        """
 
         self.origin = origin
         if not self.origin.edge:
@@ -36,10 +40,13 @@ class HalfEdge:
         if self.twin and not twin.twin:
             twin.twin = self
         elif not self.twin and endpoint:
-            self.twin = HalfEdge(endpoint, self)
+            self.twin = HalfEdge(endpoint, twin=self)
         self.next = next
         self.prev = prev
         self.face = face
+
+        if not self.twin:
+            raise Warning("HalfEdge ohne Zwilling definiert.")
     
     def direction(self):
         """Gibt den Richtungsvektor von origin zum Zielknoten zurück."""
@@ -121,15 +128,15 @@ class Face:
         ray_start = Vertex( float('-inf'), vertex.y)
         ray_end = Vertex(float('inf'), vertex.y)  # Unendlich in x-Richtung
 
-        ray_edge = HalfEdge(vertex, endpoint=ray_end)
+        ray_edge = HalfEdge(vertex, ray_end)
         intersect_count = 0
 
         for i in range(n):
             v1 = vertices[i]
             v2 = vertices[(i + 1) % n]
 
-            # Erstelle die HalfEdges für die aktuelle Kante mit create_full_edge
-            edge = HalfEdge(v1,endpoint=v2)
+            # Erstelle die HalfEdges für die aktuelle Kante
+            edge = HalfEdge(v1,v2)
             
             # Überprüfe, ob die horizontale Linie von ray_start bis ray_end die Kante schneidet
             if edges_intersect(edge, ray_edge):

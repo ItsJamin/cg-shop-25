@@ -1,16 +1,6 @@
 from .dcel import Vertex, HalfEdge, Face, edges_intersect
 import numpy as np
 
-def create_full_edge(point1 : Vertex, point2 : Vertex):
-    """
-    Erstellt Zwillings-HalfEdges und gibt Pointer auf den mit Origin p1 zurück.
-    """
-
-    edge1 = HalfEdge(point1, twin=None)
-    edge2 = HalfEdge(point2, edge1)
-
-    return edge1
-
 def connect_edges(edge1, edge2):
     """
     Verlinkt zwei Anliegende Kanten miteinander. Reihenfolge ist wichtig!

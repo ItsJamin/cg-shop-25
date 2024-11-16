@@ -16,9 +16,9 @@ def greedy_triangulation(problem : Problem) -> Result:
                 v2 = boundary_points[k]
 
                 # Create the triangle edges
-                edge1 = geo.create_full_edge(v0, v1)
-                edge2 = geo.create_full_edge(v1, v2)
-                edge3 = geo.create_full_edge(v2, v0)
+                edge1 = geo.Vertex(v0, v1)
+                edge2 = geo.Vertex(v1, v2)
+                edge3 = geo.Vertex(v2, v0)
 
                 # Check if the triangle is valid
                 if geo.is_valid_triangle(edge1, edge2, edge3, edges):

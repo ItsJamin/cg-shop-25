@@ -20,7 +20,7 @@ def greedy_top_down(problem : Problem) -> Result:
 
             print("--Schaut auf ", prev_point.position())
             
-            temp_edge = geo.create_full_edge(point, prev_point)
+            temp_edge = geo.HalfEdge(point, prev_point)
             
 
             if _no_edge_intersection(temp_edge, all_edges) and _edge_in_boundary(temp_edge, problem.g_region_boundary):
