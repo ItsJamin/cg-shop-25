@@ -24,6 +24,7 @@ class HalfEdge:
                  next : "HalfEdge" = None,
                  prev : "HalfEdge" = None,
                  face : "Face" = None,
+                 endpoint : "Vertex" = None
                  ):
         """Zwei HalfEdges mit gegensätzlicher Richtung repräsentieren eine Linie. Origin Punkt dient um Richtung darzustellen."""
 
@@ -34,6 +35,8 @@ class HalfEdge:
         self.twin = twin
         if self.twin and not twin.twin:
             twin.twin = self
+        elif not self.twin and endpoint:
+            self.twin = HalfEdge(endpoint, self)
         self.next = next
         self.prev = prev
         self.face = face
@@ -101,3 +104,85 @@ class Face:
             x2, y2 = vertices[(i + 1) % n].position()
             area += x1 * y2 - y1 * x2
         return abs(area) / 2
+    
+    def is_point_in_face(self, vertex : Vertex) -> bool:
+        """
+        Prüft, ob der Vertex innerhalb des Faces liegt.
+        Verwendet den Ray-Casting-Algorithmus und `edges_intersect`-Methode.
+        """
+        vertices = self.vertices()
+        n = len(vertices)
+
+        # Wenn weniger als 3 Ecken, ist es kein gültiges Polygon
+        if n < 3:
+            return False
+
+        # Erstelle eine horizontale Linie von 'vertex' und zähle Schnittpunkte mit den Kanten
+        ray_start = Vertex( float('-inf'), vertex.y)
+        ray_end = Vertex(float('inf'), vertex.y)  # Unendlich in x-Richtung
+
+        ray_edge = HalfEdge(vertex, endpoint=ray_end)
+        intersect_count = 0
+
+        for i in range(n):
+            v1 = vertices[i]
+            v2 = vertices[(i + 1) % n]
+
+            # Erstelle die HalfEdges für die aktuelle Kante mit create_full_edge
+            edge = HalfEdge(v1,endpoint=v2)
+            
+            # Überprüfe, ob die horizontale Linie von ray_start bis ray_end die Kante schneidet
+            if edges_intersect(edge, ray_edge):
+                intersect_count += 1
+
+        # Wenn die Anzahl der Schnittpunkte ungerade ist, liegt der Punkt innerhalb
+        return intersect_count % 2 == 1
+
+
+def edges_intersect(edge1 : HalfEdge, edge2 : HalfEdge):
+    """
+    Prüft ob zwei HalfEdges (mit twins) sich schneiden.
+    """
+    if edge1.origin == edge2.origin:
+        
+        if edge1.twin.origin == edge2.twin.origin:
+            return True
+        
+        return False
+    elif  edge1.origin == edge2.twin.origin:
+
+        if edge1.twin.origin == edge2.origin:
+            return True
+        
+        return False
+    elif  edge1.twin.origin == edge2.twin.origin:
+
+        if edge1.origin == edge2.origin:
+            return True
+        
+        return False
+    elif  edge1.twin.origin == edge2.origin:
+
+        if edge1.origin == edge2.twin.origin:
+            return True
+        
+        return False
+
+    # TODO: Calculation
+    def ccw(a, b, c):
+        """
+        Prüft, ob die Punkte a, b, c gegen den Uhrzeigersinn angeordnet sind.
+        """
+        return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0])
+
+    p1 = edge1.origin.position()
+    q1 = edge1.twin.origin.position() if edge1.twin else None
+    p2 = edge2.origin.position()
+    q2 = edge2.twin.origin.position() if edge2.twin else None
+
+    if q1 is None or q2 is None:
+        raise ValueError("Beide HalfEdges benötigen eine Twin-Edge mit einer definierten Position.")
+
+    # Prüfe, ob die Liniensegmente sich schneiden
+    return (ccw(p1, p2, q2) != ccw(q1, p2, q2)) and (ccw(p1, q1, p2) != ccw(p1, q1, q2))
+
