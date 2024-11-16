@@ -45,7 +45,7 @@ def edges_intersect(edge1, edge2):
     return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
 
 
-def is_valid_triangle(self, edge1, edge2, edge3, existing_edges):
+def is_valid_triangle(edge1, edge2, edge3, existing_edges):
     
     for existing_edge in existing_edges:
         if (edges_intersect(edge1, existing_edge) or 
@@ -60,7 +60,7 @@ def is_valid_triangle(self, edge1, edge2, edge3, existing_edges):
 
 
 
-def is_non_obtuse_triangle(self, edge):
+def is_non_obtuse_triangle(edge):
     # Prüft, ob edge und seine Nachbarn existieren und alle Twin-Edges haben
     if edge.has_twin() and edge.next and edge.next.has_twin():
         # Berechne die Richtungsvektoren der Kanten des Dreiecks
@@ -78,13 +78,14 @@ def is_non_obtuse_triangle(self, edge):
     
     return False  # Falls kein gültiges Dreieck vorliegt
 
-def add_steiner_point(self, edge):
+def add_steiner_point(edge, l: list[Vertex]):
     
     # Setze den Punkt auf die Winkelhalbierende des stumpfen Winkels
     midpoint_x = (edge.origin.x + edge.twin.origin.x) / 2
     midpoint_y = (edge.origin.y + edge.twin.origin.y) / 2
     steiner_point = Vertex(midpoint_x, midpoint_y)
     
-    self.g_points.append(steiner_point)
+    l.append(steiner_point)
+    
     return steiner_point
 

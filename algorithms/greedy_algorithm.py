@@ -21,11 +21,12 @@ def greedy_triangulation(problem : Problem) -> Result:
                 edge3 = geo.create_full_edge(v2, v0)
 
                 # Check if the triangle is valid
-                if problem.is_valid_triangle(edge1, edge2, edge3, edges):
-                    if not problem.is_non_obtuse_triangle(edge1):
+                if geo.is_valid_triangle(edge1, edge2, edge3, edges):
+                    if not geo.is_non_obtuse_triangle(edge1):
                         # If the triangle is obtuse, add a Steiner point on the longest edge
                         longest_edge = max([edge1, edge2, edge3], key=lambda e: e.length())
-                        steiner_point = problem.add_steiner_point(longest_edge)
+                        steiner_point = geo.add_steiner_point(longest_edge, problem.g_points)
+                        problem.step(steiner_point, color="orange")
                         boundary_points.append(steiner_point)  # Add Steiner point to points list for future triangles
                         print(f"Steiner point added at {steiner_point}")
 
