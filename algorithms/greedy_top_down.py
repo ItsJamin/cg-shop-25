@@ -1,7 +1,7 @@
 from instance import Problem, Result
 import geometry as geo
 
-def greedy_top_bottom(problem : Problem) -> Result:
+def greedy_top_down(problem : Problem) -> Result:
 
     result = Result()
 
@@ -24,7 +24,7 @@ def greedy_top_bottom(problem : Problem) -> Result:
 
 
 
-def _sort_points_top_down(liste):
+def _sort_points_top_down(liste : list[geo.Vertex]):
     """
     Sortiert die Liste der Punkte (Vertex) von oben nach unten.
     """
