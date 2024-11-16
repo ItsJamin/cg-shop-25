@@ -79,6 +79,9 @@ Die "Module":
     - Grundlage für die Berechnung des Algorithmus
 - instance:
     - Interne Repräsentation des Problem und dessen Attribute
+- algorithm:
+    - Funktionen und Hilfsfunktionen der Algorithmen
+    - Nehmen ein Problem und geben eine Lösung heraus
 - inpout:
     - Schnittstelle zwischen JSON-Dateien und instance
 - visualization:
