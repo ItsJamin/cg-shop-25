@@ -39,9 +39,9 @@ def greedy_triangulation(problem : Problem) -> Result:
                     edges.extend([edge1, edge2, edge3])
 
                     # Add triangle edges to animation steps
-                    problem.step(edge1, color="blue")
-                    problem.step(edge2, color="blue")
-                    problem.step(edge3, color="blue")
+                    #problem.step(edge1, color="blue")
+                    #problem.step(edge2, color="blue")
+                    #problem.step(edge3, color="blue")
 
                     # Debugging: Show triangle creation
                     print(f"Triangle created with vertices {v0}, {v1}, and {v2}")

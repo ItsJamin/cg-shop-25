@@ -29,7 +29,7 @@ def greedy_top_down(problem : Problem) -> Result:
 
                 # Edge ist okay
                 all_edges.append(temp_edge)
-                problem.step(temp_edge, color="orange")
+                result.step(temp_edge, color="orange")
                 # TODO: verkettung der edge mit dem rest.
             
 

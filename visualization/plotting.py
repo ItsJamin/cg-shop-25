@@ -1,4 +1,4 @@
-from inpout import Problem
+from instance import Problem, Result
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -35,7 +35,7 @@ def plot_problem(instance: Problem):
 
     return fig, ax
 
-def animate_algorithm(instance: Problem, interval : int = 400):
+def animate_algorithm(instance: Problem, solution: Result, interval : int = 400):
     """
     Animiert die (Lösungs-)Schritte in einem Problem mit Warteintervallen in Millisekunden.
     """
@@ -52,5 +52,5 @@ def animate_algorithm(instance: Problem, interval : int = 400):
             ax.plot([points[0], points[2]], [points[1], points[3]], color=color, linestyle="-")
 
     # Animation erstellen
-    ani = FuncAnimation(fig, update, frames=instance.v_elements, repeat=False, interval = interval)
+    ani = FuncAnimation(fig, update, frames=solution.v_elements, repeat=False, interval = interval)
     plt.show()
