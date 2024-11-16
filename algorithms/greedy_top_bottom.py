@@ -24,7 +24,10 @@ def greedy_top_bottom(problem : Problem) -> Result:
 
 
 
-def _sort_points_bottom_up(liste):
+def _sort_points_top_down(liste):
+    """
+    Sortiert die Liste der Punkte (Vertex) von oben nach unten.
+    """
     n = len(liste)
     for i in range(n):
         for j in range(i + 1, n):
