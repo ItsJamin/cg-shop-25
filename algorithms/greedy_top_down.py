@@ -36,6 +36,9 @@ def _sort_points_top_down(liste : list[geo.Vertex]):
     return liste
 
 def _no_edge_intersection(new_edge, existing_edges):
+    """
+    Überprüft ob eine neue Kante mit bereits existierenden Kanten sich überschneiden.
+    """
     for edge in existing_edges:
         if geo.edges_intersect(new_edge, edge):
             return False
