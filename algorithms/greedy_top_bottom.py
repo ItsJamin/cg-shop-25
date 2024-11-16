@@ -27,8 +27,11 @@ def greedy_top_bottom(problem : Problem) -> Result:
 def _sort_points_bottom_up():
     pass
 
-def _no_edge_intersection():
-    pass
+def _no_edge_intersection(new_edge, existing_edges):
+    for edge in existing_edges:
+        if geo.edges_intersect(new_edge, edge):
+            return False
+    True
 
 def _edge_in_boundary():
     pass
