@@ -24,8 +24,13 @@ def greedy_top_bottom(problem : Problem) -> Result:
 
 
 
-def _sort_points_bottom_up():
-    pass
+def _sort_points_bottom_up(liste):
+    n = len(liste)
+    for i in range(n):
+        for j in range(i + 1, n):
+            if liste[i].y < liste[j].y:
+                liste[i], liste[j] = liste[j], liste[i]
+    return liste
 
 def _no_edge_intersection():
     pass
