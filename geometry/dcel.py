@@ -59,4 +59,45 @@ class HalfEdge:
 
 class Face:
     def __init__(self, edge):
-        self.edge = None
+        self.edge = edge
+    
+    def edges(self) -> list[HalfEdge]:
+        """
+        Iterator, der alle HalfEdges zurückgibt, die das Face begrenzen.
+        """
+        if not self.edge:
+            return []
+        result = []
+        start = self.edge
+        current = start
+        while True:
+            if not current:
+                raise Exception("Not closed Face, missing Edges!")
+
+            result.append(current)
+            current = current.next
+            if current == start:
+                break
+        
+        return result
+    
+    def vertices(self) -> list[Vertex]:
+        """
+        Gibt alle Eckpunkte des Faces in zyklischer Reihenfolge zurück.
+        """
+        return [edge.origin for edge in self.edges()]
+
+    def area(self) -> float:
+        """
+        Berechnet die Fläche des Faces mithilfe der Shoelace-Formel.
+        """
+        vertices = self.vertices()
+        n = len(vertices)
+        if n < 3:  # Kein gültiges Polygon
+            return 0
+        area = 0
+        for i in range(n):
+            x1, y1 = vertices[i].position()
+            x2, y2 = vertices[(i + 1) % n].position()
+            area += x1 * y2 - y1 * x2
+        return abs(area) / 2

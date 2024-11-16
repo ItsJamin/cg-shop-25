@@ -20,7 +20,7 @@ def greedy_top_bottom(problem : Problem) -> Result:
     #    if (_no_edge_intersection() and _edge_in_boundary()):
     #        result.edges.append(edge)
 
-    pass
+    return result
 
 
 
@@ -41,5 +41,26 @@ def _no_edge_intersection(new_edge, existing_edges):
             return False
     True
 
-def _edge_in_boundary():
-    pass
+def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
+    """
+    Überprüft das eine Kante in einer Fläche liegt. True wenn in der Fläche.
+    Annahme: Keine Punkte ausserhalb der boundary.
+    """
+    
+    # Checkt den Fall das beide Punkte zum Außenbereich gehören
+    if edge.origin in boundary.vertices and edge.twin.origin in boundary.vertices:
+        is_edge_of_boundary = False
+
+        for b_edge in boundary.edges:
+
+            if b_edge.origin.position == edge.origin.position and b_edge.twin.origin.position == edge.twin.origin.position:
+                return True
+            
+            if b_edge.twin.origin.position == edge.origin.position and b_edge.origin.position == edge.twin.origin.position:
+                return True
+        
+        return False
+    
+    return True
+    
+

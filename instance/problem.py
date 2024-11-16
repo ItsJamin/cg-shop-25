@@ -35,6 +35,7 @@ class Problem():
         # Schliesst Boundary-Kreis mit Startpunkt
         bound = self.region_boundary + [self.region_boundary[0]]
         last_edge = None
+        start_edge = None
 
         # Boundary als HalfEdge-Verkettung realisieren
         for i in range(len(bound)-1):
@@ -44,11 +45,13 @@ class Problem():
             if last_edge is not None:
                 geo.connect_edges(last_edge, current)
             else:
-                self.g_region_boundary = current
+                start_edge = current
             
             last_edge = current
         
-        geo.connect_edges(last_edge, self.g_region_boundary)
+        geo.connect_edges(last_edge, start_edge)
+
+        self.g_region_boundary = geo.Face(start_edge)
 
         # Additional-Constraints als HalfEdge-Verkettung realisieren
         for constraint in self.additional_constraints:
