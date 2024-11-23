@@ -87,15 +87,16 @@ def connect_to_grid(edge : HalfEdge):
     if edge.twin not in edge.twin.origin.edges:
         edge.twin.origin.edges.append(edge.twin)
 
+    face, face_twin = None, None
     # Create Faces
     if (is_valid_triangle(edge)):
         face = Face(edge)
-        print("HURAAY")
+        print("Face erstellt")
     if (is_valid_triangle(edge.twin)):
-        face = Face(edge.twin)
-        print("HURAAY")
+        face_twin = Face(edge.twin)
+        print("Face erstellt")
 
-    # TODO: maybe faces speichern?
+    return face, face_twin
 
 def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> tuple[HalfEdge, HalfEdge]:
     """
@@ -139,8 +140,5 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     # Min und Max Winkel finden
     min_edge, min_angle = min(angles, key=lambda x: x[1])
     max_edge, max_angle = max(angles, key=lambda x: x[1])
-
-    print("Min: ", min_angle)
-    print("Max: ", max_angle)
     
     return (min_edge, max_edge)

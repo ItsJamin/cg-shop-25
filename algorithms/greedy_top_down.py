@@ -33,7 +33,14 @@ def greedy_top_down(problem : Problem) -> Result:
                 result.step(temp_edge, color="orange")
 
                 # TODO: verkettung der edge mit dem rest.
-                _connect_edge_to_dcel(temp_edge)
+                face, face_twin = geo.connect_to_grid(temp_edge)
+
+                if face:
+                    print("Animiere Face")
+                    result.step(face, color="orange")
+                if face_twin:
+                    print("Animiere Face")
+                    result.step(face_twin, color="orange")
             
 
     return result
@@ -82,8 +89,7 @@ def _connect_edge_to_dcel(edge : geo.HalfEdge):
     # Für origin und endpoint jeweils:
     # Nehme alle Edges und berechne größten und kleinsten Winkel.
     # (zusätzlich kann man >180 und <180 definieren) aber regelt sich dann eh schon
-
-    # Checke auf dreiecke in beide richtungen und erstelle dann
+    
 
     # Letzter Schritt: Füge beide HalfEdges zu den Edge_referenzen der Punkte hinzu
     pass

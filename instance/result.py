@@ -23,6 +23,11 @@ class Result():
             points = object.position()
         elif type(object) == geo.HalfEdge and object.has_twin():
             points = np.concatenate([object.origin.position(),object.twin.origin.position()])
+        elif type(object) == geo.Face:
+            print("Baue Animation")
+            face_points = [v.position() for v in object.get_vertices()]
+
+            points = np.concatenate(face_points)
         else:
             raise Exception("Non-Animatible Object. Only Vertex or HalfEdge with twin")
     

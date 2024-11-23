@@ -1,6 +1,7 @@
 from instance import Problem, Result
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.patches import Polygon
 
 def plot_problem(instance: Problem):
     
@@ -52,6 +53,13 @@ def animate_algorithm(instance: Problem, solution: Result, interval : int = 400)
             ax.scatter(points[0], points[1], color = color)
         elif len(points) == 4:
             ax.plot([points[0], points[2]], [points[1], points[3]], color=color, linestyle="-")
+        elif len(points) >= 4:
+            # TODO: Plot Polygon
+            polygon_points = [(points[i], points[i+1]) for i in range(0, len(points), 2)]
+            polygon = Polygon(polygon_points, closed=True, edgecolor=color, fill=False)
+            ax.add_patch(polygon)
+            print(polygon_points)
+            pass
 
     # Animation erstellen
     ani = FuncAnimation(fig, update, frames=solution.v_elements, repeat=False, interval = interval)
