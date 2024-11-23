@@ -1,7 +1,7 @@
 from .dcel import Vertex, HalfEdge, Face, edges_intersect
 import numpy as np
 
-def connect_edges(edge1, edge2):
+def connect_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     """
     Verlinkt zwei Anliegende Kanten miteinander. Reihenfolge ist wichtig!
     edge1 -> Point -> edge2
@@ -19,9 +19,17 @@ def connect_edges(edge1, edge2):
     edge1.twin.prev = edge2.twin
     edge2.twin.next = edge1.twin
 
+def connect_half_edges(edge1 : HalfEdge, edge2 : HalfEdge):
+    # TODO: Gucke ob edge1 auf origin edge2 zeigt und edge2 nicht auf edge1
+    # dann connecte
+    pass
 
 
 def is_valid_triangle(edge1, edge2, edge3, existing_edges):
+
+    # TODO: Kann man noch restriktiver machen
+    # Ist nur triangle wenn die gegenseitig auf sich zeigen
+
     
     for existing_edge in existing_edges:
         if (edges_intersect(edge1, existing_edge) or 
@@ -53,15 +61,3 @@ def is_non_obtuse_triangle(edge):
         return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
     
     return False  # Falls kein gültiges Dreieck vorliegt
-
-def add_steiner_point(edge, l: list[Vertex]):
-    
-    # Setze den Punkt auf die Winkelhalbierende des stumpfen Winkels
-    midpoint_x = (edge.origin.x + edge.twin.origin.x) / 2
-    midpoint_y = (edge.origin.y + edge.twin.origin.y) / 2
-    steiner_point = Vertex(midpoint_x, midpoint_y)
-    
-    l.append(steiner_point)
-    
-    return steiner_point
-

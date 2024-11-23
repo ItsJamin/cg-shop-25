@@ -5,7 +5,7 @@ def greedy_top_down(problem : Problem) -> Result:
 
     result = Result()
 
-    all_edges = problem.g_constraints + problem.g_region_boundary.edges()
+    all_edges = problem.g_constraints + problem.g_region_boundary.get_edges()
 
     #erstelle sortierte liste, angefangen mit dem höchsten punkt
     points = _sort_points_top_down(problem.g_points)
@@ -25,17 +25,20 @@ def greedy_top_down(problem : Problem) -> Result:
 
             if _no_edge_intersection(temp_edge, all_edges) and _edge_in_boundary(temp_edge, problem.g_region_boundary):
                 
+                
                 print("Edge okay")
 
                 # Edge ist okay
                 all_edges.append(temp_edge)
                 result.step(temp_edge, color="orange")
+
                 # TODO: verkettung der edge mit dem rest.
+                _connect_edge_to_dcel(temp_edge)
             
 
     return result
 
-
+# Hilfsfunktionen #
 
 def _sort_points_top_down(liste : list[geo.Vertex]):
     """
@@ -67,5 +70,20 @@ def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
     print(middle)
 
     return boundary.is_point_in_face(middle)
-    
 
+
+def _connect_edge_to_dcel(edge : geo.HalfEdge):
+    """
+    Verbindet die Edge mit den dazugehörigen Edges an origin und endpoint.
+    Zweck: leichte Erstellung von Flächen
+    Annahme: Äußere Hülle ist counter-clockwise -> innere Dreiecke sind also im Uhrzeigersinn
+    """
+
+    # Für origin und endpoint jeweils:
+    # Nehme alle Edges und berechne größten und kleinsten Winkel.
+    # (zusätzlich kann man >180 und <180 definieren) aber regelt sich dann eh schon
+
+    # Checke auf dreiecke in beide richtungen und erstelle dann
+
+    # Letzter Schritt: Füge beide HalfEdges zu den Edge_referenzen der Punkte hinzu
+    pass

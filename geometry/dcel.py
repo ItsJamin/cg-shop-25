@@ -3,12 +3,11 @@ import numpy as np
 class Vertex:
     def __init__(self, 
                  x: float, 
-                 y: float, 
-                 edge : "HalfEdge" = None):
+                 y: float):
         """Repräsentation eines Punktes, hat eine Referenz zu einer HalfEdge."""
         self.x = x
         self.y = y
-        self.edge = edge
+        self.edges = []
     
     def position(self):
         return np.array([self.x, self.y])
@@ -25,22 +24,26 @@ class HalfEdge:
                  next : "HalfEdge" = None,
                  prev : "HalfEdge" = None,
                  face : "Face" = None,
+                 point_reference: bool = False
                  ):
         """
         Zwei HalfEdges mit gegensätzlicher Richtung repräsentieren eine Linie. Origin Punkt dient um Richtung darzustellen.
 
         `twin` oder `endpoint` muss gesetzt sein, um eine volle Kante zu setzen.
+
+        point_reference: Wenn True addet die Kante direkt zu den Zeigern vom Punkt
+        -> Nur gewollt wenn man sicher ist das man Kante hinzufügen will.
         """
 
         self.origin = origin
-        if not self.origin.edge:
-            self.origin.edge = self
+        if point_reference:
+            self.origin.edges.append(self)
 
         self.twin = twin
         if self.twin and not twin.twin:
             twin.twin = self
         elif not self.twin and endpoint:
-            self.twin = HalfEdge(endpoint, twin=self)
+            self.twin = HalfEdge(endpoint, twin=self, point_reference=point_reference)
         self.next = next
         self.prev = prev
         self.face = face
@@ -71,7 +74,7 @@ class Face:
     def __init__(self, edge):
         self.edge = edge
     
-    def edges(self) -> list[HalfEdge]:
+    def get_edges(self) -> list[HalfEdge]:
         """
         Iterator, der alle HalfEdges zurückgibt, die das Face begrenzen.
         """
@@ -91,17 +94,17 @@ class Face:
         
         return result
     
-    def vertices(self) -> list[Vertex]:
+    def get_vertices(self) -> list[Vertex]:
         """
         Gibt alle Eckpunkte des Faces in zyklischer Reihenfolge zurück.
         """
-        return [edge.origin for edge in self.edges()]
+        return [edge.origin for edge in self.get_edges()]
 
-    def area(self) -> float:
+    def get_area(self) -> float:
         """
         Berechnet die Fläche des Faces mithilfe der Shoelace-Formel.
         """
-        vertices = self.vertices()
+        vertices = self.get_vertices()
         n = len(vertices)
         if n < 3:  # Kein gültiges Polygon
             return 0
@@ -117,7 +120,7 @@ class Face:
         Prüft, ob der Vertex innerhalb des Faces liegt.
         Verwendet den Ray-Casting-Algorithmus und `edges_intersect`-Methode.
         """
-        vertices = self.vertices()
+        vertices = self.get_vertices()
         n = len(vertices)
 
         # Wenn weniger als 3 Ecken, ist es kein gültiges Polygon
