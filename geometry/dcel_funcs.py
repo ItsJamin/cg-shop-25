@@ -91,10 +91,10 @@ def connect_to_grid(edge : HalfEdge):
     # Create Faces
     if (is_valid_triangle(edge)):
         face = Face(edge)
-        print("Face erstellt")
     if (is_valid_triangle(edge.twin)):
         face_twin = Face(edge.twin)
-        print("Face erstellt")
+    
+    print(face, face_twin)
 
     return face, face_twin
 

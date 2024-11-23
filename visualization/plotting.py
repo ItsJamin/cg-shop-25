@@ -56,7 +56,7 @@ def animate_algorithm(instance: Problem, solution: Result, interval : int = 400)
         elif len(points) >= 4:
             # TODO: Plot Polygon
             polygon_points = [(points[i], points[i+1]) for i in range(0, len(points), 2)]
-            polygon = Polygon(polygon_points, closed=True, edgecolor=color, fill=True)
+            polygon = Polygon(polygon_points, closed=True, edgecolor=color, fill=True, facecolor=color)
             ax.add_patch(polygon)
             print(polygon_points)
             pass

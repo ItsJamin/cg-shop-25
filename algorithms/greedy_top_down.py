@@ -33,14 +33,14 @@ def greedy_top_down(problem : Problem) -> Result:
                 result.step(temp_edge, color="orange")
 
                 # TODO: verkettung der edge mit dem rest.
-                face, face_twin = geo.connect_to_grid(temp_edge)
+                geo.connect_to_grid(temp_edge)
 
-                if face:
+                if temp_edge.face:
                     print("Animiere Face")
-                    result.step(face, color="orange")
-                if face_twin:
+                    result.step(temp_edge.face, color="green")
+                if temp_edge.twin.face:
                     print("Animiere Face")
-                    result.step(face_twin, color="orange")
+                    result.step(temp_edge.twin.face, color="green")
             
 
     return result

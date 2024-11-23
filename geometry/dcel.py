@@ -76,10 +76,8 @@ class Face:
     def __init__(self, edge : HalfEdge):
         self.edge = edge
 
-        current = edge.next
-        while current != edge:
-            current.face = self
-            current = current.next
+        for edge in self.get_edges():
+            edge.face = self
     
     def get_edges(self) -> list[HalfEdge]:
         """
