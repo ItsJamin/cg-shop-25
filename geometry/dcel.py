@@ -183,13 +183,13 @@ def edges_intersect(edge1 : HalfEdge, edge2 : HalfEdge):
         return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0])
 
     p1 = edge1.origin.position()
-    q1 = edge1.twin.origin.position() if edge1.twin else None
-    p2 = edge2.origin.position()
+    p2 = edge1.twin.origin.position() if edge1.twin else None
+    q1 = edge2.origin.position()
     q2 = edge2.twin.origin.position() if edge2.twin else None
 
-    if q1 is None or q2 is None:
+    if p2 is None or q2 is None:
         raise ValueError("Beide HalfEdges benötigen eine Twin-Edge mit einer definierten Position.")
 
     # Prüfe, ob die Liniensegmente sich schneiden
-    return (ccw(p1, p2, q2) != ccw(q1, p2, q2)) and (ccw(p1, q1, p2) != ccw(p1, q1, q2))
+    return (ccw(p1, q1, q2) != ccw(p2, q1, q2)) and (ccw(p1, p2, q1) != ccw(p1, p2, q2))
 
