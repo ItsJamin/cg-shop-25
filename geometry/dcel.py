@@ -3,11 +3,13 @@ import numpy as np
 class Vertex:
     def __init__(self, 
                  x: float, 
-                 y: float):
+                 y: float,
+                 is_constraint: bool = False):
         """Repräsentation eines Punktes, hat eine Referenz zu einer HalfEdge."""
         self.x = x
         self.y = y
         self.edges = []
+        self.is_constraint = is_constraint
     
     def position(self):
         return np.array([self.x, self.y])
@@ -24,7 +26,8 @@ class HalfEdge:
                  next : "HalfEdge" = None,
                  prev : "HalfEdge" = None,
                  face : "Face" = None,
-                 point_reference: bool = False
+                 point_reference: bool = False,
+                 is_constraint: bool = False
                  ):
         """
         Zwei HalfEdges mit gegensätzlicher Richtung repräsentieren eine Linie. Origin Punkt dient um Richtung darzustellen.
@@ -47,15 +50,14 @@ class HalfEdge:
         self.next = next
         self.prev = prev
         self.face = face
+        self.is_constraint = is_constraint
 
         if not self.twin:
             raise Warning("HalfEdge ohne Zwilling definiert.")
     
     def direction(self):
         """Gibt den Richtungsvektor von origin zum Zielknoten zurück."""
-        if self.twin:
-            return self.twin.origin.position() - self.origin.position()
-        return None
+        return self.twin.origin.position() - self.origin.position()
 
     def length(self):
         """Berechnet die euklidische Länge der Kante."""
@@ -71,8 +73,13 @@ class HalfEdge:
             return f"({self.origin}) -> None"
 
 class Face:
-    def __init__(self, edge):
+    def __init__(self, edge : HalfEdge):
         self.edge = edge
+
+        current = edge.next
+        while current != edge:
+            current.face = self
+            current = current.next
     
     def get_edges(self) -> list[HalfEdge]:
         """
@@ -178,7 +185,6 @@ def edges_intersect(edge1 : HalfEdge, edge2 : HalfEdge):
         
         return False
 
-    # TODO: Calculation
     def ccw(a, b, c):
         """
         Prüft, ob die Punkte a, b, c gegen den Uhrzeigersinn angeordnet sind.

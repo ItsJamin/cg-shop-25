@@ -25,22 +25,19 @@ def connect_half_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     pass
 
 
-def is_valid_triangle(edge1, edge2, edge3, existing_edges):
+def is_valid_triangle(edge : HalfEdge):
 
-    # TODO: Kann man noch restriktiver machen
-    # Ist nur triangle wenn die gegenseitig auf sich zeigen
+    current_n = edge
+    current_p = edge
 
-    
-    for existing_edge in existing_edges:
-        if (edges_intersect(edge1, existing_edge) or 
-            edges_intersect(edge2, existing_edge) or 
-            edges_intersect(edge3, existing_edge)):
+    for _ in range(3):
+        if current_n and current_p:
+            current_n = current_n.next
+            current_p = current_p.prev
+        else:
             return False
     
-    # Optionally, check if the triangle is within the boundary if needed
-    # Example: Use a point-in-polygon test for one vertex or center of triangle
-    
-    return True
+    return current_n == edge and current_p == edge
 
 
 
@@ -61,3 +58,89 @@ def is_non_obtuse_triangle(edge):
         return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
     
     return False  # Falls kein gültiges Dreieck vorliegt
+
+def connect_to_grid(edge : HalfEdge):
+
+    # Endpoint 
+    close_edge, far_edge = get_min_max_angle_edges(edge.twin, edge.twin.origin.edges)
+
+    if close_edge and far_edge:
+        edge.next = close_edge
+        close_edge.prev = edge
+
+        edge.twin.prev = far_edge.twin
+        far_edge.twin.next = edge.twin
+
+    # Origin
+    close_edge, far_edge = get_min_max_angle_edges(edge, edge.origin.edges)
+
+    if close_edge and far_edge:
+        edge.twin.next = close_edge
+        close_edge.prev = edge.twin
+
+        edge.prev = far_edge.twin
+        far_edge.twin.next = edge
+
+
+    if edge not in edge.origin.edges:
+        edge.origin.edges.append(edge)
+    if edge.twin not in edge.twin.origin.edges:
+        edge.twin.origin.edges.append(edge.twin)
+
+    # Create Faces
+    if (is_valid_triangle(edge)):
+        face = Face(edge)
+        print("HURAAY")
+    if (is_valid_triangle(edge.twin)):
+        face = Face(edge.twin)
+        print("HURAAY")
+
+    # TODO: maybe faces speichern?
+
+def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> tuple[HalfEdge, HalfEdge]:
+    """
+    Berechnet die Winkel zwischen einer gegebenen HalfEdge und einer Liste von HalfEdges.
+    Gibt die Kanten mit dem minimalen und maximalen Winkel zurück.
+
+    Args:
+        base_edge (HalfEdge): Die Ausgangskante, deren Winkel zu anderen gemessen werden.
+        edge_list (list[HalfEdge]): Eine Liste von HalfEdges, zu denen die Winkel berechnet werden.
+
+    Returns:
+        tuple: Ein Tupel (min_edge, max_edge, min_angle, max_angle), wobei
+            min_edge die Kante mit dem kleinsten Winkel ist,
+            max_edge die Kante mit dem größten Winkel ist,
+            min_angle und max_angle die entsprechenden Winkel in Grad sind.
+    """
+    
+    base_dir = base_edge.direction()
+    base_dir = base_dir / np.linalg.norm(base_dir)  # Normalisieren
+    
+    if len(edge_list) == 0:
+        return (None,None)
+
+    angles = []
+    for edge in edge_list:
+        
+        edge_dir = edge.direction()
+        edge_dir = edge_dir / np.linalg.norm(edge_dir)  # Normalisieren
+        
+        # Winkel berechnen
+        dot_product = np.dot(base_dir, edge_dir)
+        cross_product = np.cross(base_dir, edge_dir)
+        
+        # Winkel in Radiant berechnen und orientiert machen
+        angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 liefert orientierte Winkel
+
+        # Angle in bereich 0 bis 360 cappen
+        angle = angle % 360
+        angles.append((edge, angle))  # In Grad umwandeln
+    
+    # Min und Max Winkel finden
+    min_edge, min_angle = min(angles, key=lambda x: x[1])
+    max_edge, max_angle = max(angles, key=lambda x: x[1])
+
+    print("Min: ", min_angle)
+    print("Max: ", max_angle)
+    
+    return (min_edge, max_edge)

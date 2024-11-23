@@ -55,8 +55,8 @@ class Problem():
         # Additional-Constraints als HalfEdge-Verkettung realisieren
         for constraint in self.additional_constraints:
             a, b = constraint
-            edge1 = geo.HalfEdge(self.g_points[a], self.g_points[b], point_reference=True)
-            edge2 = edge1.twin
+            edge1 = geo.HalfEdge(self.g_points[a], self.g_points[b])
+            geo.connect_to_grid(edge1)
             self.g_constraints.append(edge1)
 
     def validate_problem(self):

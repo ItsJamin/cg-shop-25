@@ -40,6 +40,8 @@ def animate_algorithm(instance: Problem, solution: Result, interval : int = 400)
     Animiert die (Lösungs-)Schritte in einem Problem mit Warteintervallen in Millisekunden.
     """
 
+    #TODO: add faces
+
     # Nehme das visualisierte Problem als Vorlage
     fig, ax = plot_problem(instance)
 
