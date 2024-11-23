@@ -41,21 +41,21 @@ def is_valid_triangle(edge : HalfEdge):
 
 
 
-def is_non_obtuse_triangle(edge):
+def is_non_obtuse_triangle(face : Face):
     # Prüft, ob edge und seine Nachbarn existieren und alle Twin-Edges haben
-    if edge.has_twin() and edge.next and edge.next.has_twin():
-        # Berechne die Richtungsvektoren der Kanten des Dreiecks
-        v1 = edge.direction()
-        v2 = edge.next.direction()
-        v3 = edge.next.next.direction()
+    edge = face.edge
+    # Berechne die Richtungsvektoren der Kanten des Dreiecks
+    v1 = edge.direction()
+    v2 = edge.next.direction()
+    v3 = edge.next.next.direction()
 
-        # Berechne die Winkel zwischen den Kantenpaaren
-        angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-        angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
-        angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
-        
-        # Prüfe, ob alle Winkel ≤ 90 Grad sind (π/2)
-        return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
+    # Berechne die Winkel zwischen den Kantenpaaren
+    angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+    angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
+    angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
+    
+    # Prüfe, ob alle Winkel ≤ 90 Grad sind (π/2)
+    return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
     
     return False  # Falls kein gültiges Dreieck vorliegt
 

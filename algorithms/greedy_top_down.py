@@ -34,13 +34,18 @@ def greedy_top_down(problem : Problem) -> Result:
 
                 # TODO: verkettung der edge mit dem rest.
                 geo.connect_to_grid(temp_edge)
+                
 
                 if temp_edge.face:
-                    print("Animiere Face")
-                    result.step(temp_edge.face, color="green")
+                    if geo.is_non_obtuse_triangle(temp_edge.face):
+                        result.step(temp_edge.face, color="green")
+                    else:
+                        result.step(temp_edge.face, color="#ffc1cc")
                 if temp_edge.twin.face:
-                    print("Animiere Face")
-                    result.step(temp_edge.twin.face, color="green")
+                    if geo.is_non_obtuse_triangle(temp_edge.twin.face):
+                        result.step(temp_edge.twin.face, color="green")
+                    else:
+                        result.step(temp_edge.twin.face, color="#ffc1cc")
             
 
     return result
