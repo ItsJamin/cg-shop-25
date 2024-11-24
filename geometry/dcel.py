@@ -26,7 +26,7 @@ class HalfEdge:
                  next : "HalfEdge" = None,
                  prev : "HalfEdge" = None,
                  face : "Face" = None,
-                 point_reference: bool = False,
+                 reference_from_below: bool = False,
                  is_constraint: bool = False
                  ):
         """
@@ -34,19 +34,19 @@ class HalfEdge:
 
         `twin` oder `endpoint` muss gesetzt sein, um eine volle Kante zu setzen.
 
-        point_reference: Wenn True addet die Kante direkt zu den Zeigern vom Punkt
+        reference_from_below: Wenn True addet die Kante direkt zu den Zeigern vom Punkt
         -> Nur gewollt wenn man sicher ist das man Kante hinzufügen will.
         """
 
         self.origin = origin
-        if point_reference:
+        if reference_from_below:
             self.origin.edges.append(self)
 
         self.twin = twin
         if self.twin and not twin.twin:
             twin.twin = self
         elif not self.twin and endpoint:
-            self.twin = HalfEdge(endpoint, twin=self, point_reference=point_reference)
+            self.twin = HalfEdge(endpoint, twin=self, reference_from_below=reference_from_below)
         self.next = next
         self.prev = prev
         self.face = face
@@ -73,11 +73,19 @@ class HalfEdge:
             return f"({self.origin}) -> None"
 
 class Face:
-    def __init__(self, edge : HalfEdge):
+    def __init__(self, edge : HalfEdge, reference_from_below : bool = False):
+        """
+        edge: Eine Kante des Faces
+        reference_from_below: Wenn True setzt die facepointer der kanten auf dieses Face
+        """
         self.edge = edge
 
+        if reference_from_below:
+            self.set_face_of_edges()
+    
+    def set_face_of_edges(self):
         for edge in self.get_edges():
-            edge.face = self
+                edge.face = self
     
     def get_edges(self) -> list[HalfEdge]:
         """
@@ -119,6 +127,7 @@ class Face:
             x2, y2 = vertices[(i + 1) % n].position()
             area += x1 * y2 - y1 * x2
         return abs(area) / 2
+    
     
     def is_point_in_face(self, vertex : Vertex) -> bool:
         """

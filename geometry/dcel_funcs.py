@@ -19,12 +19,6 @@ def connect_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     edge1.twin.prev = edge2.twin
     edge2.twin.next = edge1.twin
 
-def connect_half_edges(edge1 : HalfEdge, edge2 : HalfEdge):
-    # TODO: Gucke ob edge1 auf origin edge2 zeigt und edge2 nicht auf edge1
-    # dann connecte
-    pass
-
-
 def is_valid_triangle(edge : HalfEdge):
 
     current_n = edge
@@ -38,7 +32,6 @@ def is_valid_triangle(edge : HalfEdge):
             return False
     
     return current_n == edge and current_p == edge
-
 
 
 def is_non_obtuse_triangle(face : Face):
@@ -90,9 +83,9 @@ def connect_to_grid(edge : HalfEdge):
     face, face_twin = None, None
     # Create Faces
     if (is_valid_triangle(edge)):
-        face = Face(edge)
+        face = Face(edge, reference_from_below=True)
     if (is_valid_triangle(edge.twin)):
-        face_twin = Face(edge.twin)
+        face_twin = Face(edge.twin, reference_from_below=True)
     
     print(face, face_twin)
 

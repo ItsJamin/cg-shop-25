@@ -34,18 +34,13 @@ def greedy_top_down(problem : Problem) -> Result:
 
                 # TODO: verkettung der edge mit dem rest.
                 geo.connect_to_grid(temp_edge)
-                
 
-                if temp_edge.face:
-                    if geo.is_non_obtuse_triangle(temp_edge.face):
-                        result.step(temp_edge.face, color="green")
-                    else:
-                        result.step(temp_edge.face, color="#ffc1cc")
-                if temp_edge.twin.face:
-                    if geo.is_non_obtuse_triangle(temp_edge.twin.face):
-                        result.step(temp_edge.twin.face, color="green")
-                    else:
-                        result.step(temp_edge.twin.face, color="#ffc1cc")
+                for f in [temp_edge.face, temp_edge.twin.face]:
+                    if f:
+                        if geo.is_non_obtuse_triangle(f):
+                                result.step(f, color="green")
+                        else:
+                            result.step(f, color="#ffc1cc")
             
 
     return result
@@ -73,7 +68,7 @@ def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.Hal
             return False
     return True
 
-def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
+def edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
     """
     Überprüft das eine Kante in einer Fläche liegt. True wenn in der Fläche.
     """
@@ -82,19 +77,3 @@ def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
     print(middle)
 
     return boundary.is_point_in_face(middle)
-
-
-def _connect_edge_to_dcel(edge : geo.HalfEdge):
-    """
-    Verbindet die Edge mit den dazugehörigen Edges an origin und endpoint.
-    Zweck: leichte Erstellung von Flächen
-    Annahme: Äußere Hülle ist counter-clockwise -> innere Dreiecke sind also im Uhrzeigersinn
-    """
-
-    # Für origin und endpoint jeweils:
-    # Nehme alle Edges und berechne größten und kleinsten Winkel.
-    # (zusätzlich kann man >180 und <180 definieren) aber regelt sich dann eh schon
-    
-
-    # Letzter Schritt: Füge beide HalfEdges zu den Edge_referenzen der Punkte hinzu
-    pass

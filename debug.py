@@ -12,7 +12,7 @@ if __name__ == '__main__':
     p3 = geo.Vertex(5,5)
     p4 = geo.Vertex(3,10)
 
-    e1 = geo.HalfEdge(p1,p2, point_reference=True)
+    e1 = geo.HalfEdge(p1,p2, reference_from_below=True)
 
     fe2 = geo.HalfEdge(p2,p4)
     e2 = geo.HalfEdge(p2,p3)

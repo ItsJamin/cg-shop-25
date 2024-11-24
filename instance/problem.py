@@ -39,7 +39,7 @@ class Problem():
         # Boundary als HalfEdge-Verkettung realisieren
         for i in range(len(bound)-1):
 
-            current = geo.HalfEdge(self.g_points[bound[i]], self.g_points[bound[i+1]], point_reference=True)
+            current = geo.HalfEdge(self.g_points[bound[i]], self.g_points[bound[i+1]], reference_from_below=True, is_constraint=True)
 
             if last_edge is not None:
                 geo.connect_edges(last_edge, current)
@@ -55,7 +55,7 @@ class Problem():
         # Additional-Constraints als HalfEdge-Verkettung realisieren
         for constraint in self.additional_constraints:
             a, b = constraint
-            edge1 = geo.HalfEdge(self.g_points[a], self.g_points[b])
+            edge1 = geo.HalfEdge(self.g_points[a], self.g_points[b], is_constraint=True)
             geo.connect_to_grid(edge1)
             self.g_constraints.append(edge1)
 
