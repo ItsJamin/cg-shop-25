@@ -1,11 +1,17 @@
 import visualization as vis
 import inpout as inp
 import geometry as geo
+import algorithms as alg
 
 if __name__ == '__main__':
     
+    problem = inp.load_problem("cgshop2025_examples_ortho_150_a39ede60.instance.json")
 
-    #problem = inp.load_problem("cgshop2025_examples_simple-polygon-exterior_10_34daa0f6.instance.json")
+    solution = alg.greedy_top_down(problem)
+    
+    # visualize the problem and animate the solution steps. 
+    vis.animate_algorithm(problem, solution, interval=10, show_faces=True)
+
 
     p1 = geo.Vertex(0,0)
     p2 = geo.Vertex(3,5)
