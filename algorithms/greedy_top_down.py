@@ -68,7 +68,7 @@ def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.Hal
             return False
     return True
 
-def edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
+def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
     """
     Überprüft das eine Kante in einer Fläche liegt. True wenn in der Fläche.
     """
