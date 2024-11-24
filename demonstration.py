@@ -12,4 +12,4 @@ if __name__ == '__main__':
     solution = alg.greedy_top_down(problem)
     
     # Visualisiere das Problem und animiere was der Algorithmus erstellt hat. 
-    vis.animate_algorithm(problem, solution, interval=800)
+    vis.animate_algorithm(problem, solution, interval=800, show_faces=False)

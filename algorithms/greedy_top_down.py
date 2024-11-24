@@ -38,7 +38,7 @@ def greedy_top_down(problem : Problem) -> Result:
                 for f in [temp_edge.face, temp_edge.twin.face]:
                     if f:
                         if geo.is_non_obtuse_triangle(f):
-                                result.step(f, color="green")
+                                result.step(f, color="#BCD8B7")
                         else:
                             result.step(f, color="#ffc1cc")
             

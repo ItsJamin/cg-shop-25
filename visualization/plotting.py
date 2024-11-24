@@ -36,12 +36,10 @@ def plot_problem(instance: Problem):
 
     return fig, ax
 
-def animate_algorithm(instance: Problem, solution: Result, interval : int = 400):
+def animate_algorithm(instance: Problem, solution: Result, interval : int = 400, show_faces : bool = True):
     """
     Animiert die (Lösungs-)Schritte in einem Problem mit Warteintervallen in Millisekunden.
     """
-
-    #TODO: add faces
 
     # Nehme das visualisierte Problem als Vorlage
     fig, ax = plot_problem(instance)
@@ -53,14 +51,17 @@ def animate_algorithm(instance: Problem, solution: Result, interval : int = 400)
             ax.scatter(points[0], points[1], color = color)
         elif len(points) == 4:
             ax.plot([points[0], points[2]], [points[1], points[3]], color=color, linestyle="-")
-        elif len(points) >= 4:
-            # TODO: Plot Polygon
+        elif len(points) > 4:
             polygon_points = [(points[i], points[i+1]) for i in range(0, len(points), 2)]
             polygon = Polygon(polygon_points, closed=True, fill=True, facecolor=color)
             ax.add_patch(polygon)
-            print(polygon_points)
-            pass
+
+    elems_to_animate = solution.v_elements
+
+    # Zeige Faces nur wenn gewollt
+    if not show_faces:
+        elems_to_animate = [elem for elem in elems_to_animate if len(elem[0]) <= 4]
 
     # Animation erstellen
-    ani = FuncAnimation(fig, update, frames=solution.v_elements, repeat=False, interval = interval)
+    ani = FuncAnimation(fig, update, frames=elems_to_animate, repeat=False, interval = interval)
     plt.show()
