@@ -84,6 +84,9 @@ class Face:
         if reference_from_below:
             self.set_face_of_edges()
     
+    def __repr__(self):
+        return f"[{self.get_vertices()}]"
+
     def set_face_of_edges(self):
         for edge in self.get_edges():
                 edge.face = self

@@ -38,21 +38,39 @@ def greedy_top_down(problem: Problem) -> Result:
                             result.step(f, color="#ffc1cc")
 
     # Fix obtuse triangles by placing Steiner points
-    for face in faces_to_look_at:
+    for i, face in enumerate(faces_to_look_at):
+        print(i)
         if not geo.is_non_obtuse_triangle(face):
+            if len(face.get_vertices()) > 3:
+                # TODO: wenn kein Dreieck, trianguliere
+                continue
+
             #TODO: Schaue nach ob Kanten Tausch möglich um Steiner Punkte zu reduzieren
-            steiner_point = _calculate_steiner_point(face)
+            steiner_point, changed_edge = _calculate_steiner_point(face)
+            
+            changed_edge.origin.edges.remove(changed_edge)
+            changed_edge.twin.origin.edges.remove(changed_edge.twin)
+
             if steiner_point:
-                problem.g_points.append(steiner_point)
+                problem.g_points.append(steiner_point) #wahrshcienlich eher bei result
                 result.step(steiner_point, color="red")  # Visualize the Steiner point
-                _add_steiner_point_to_triangulation(steiner_point, face, all_edges, result)
+                new_faces = _add_steiner_point_to_triangulation(steiner_point, face, all_edges, result)
+                for face in new_faces:
+                    faces_to_look_at.insert(i+1, face)
                 
+                if changed_edge.face in faces_to_look_at:
+                    faces_to_look_at.remove(changed_edge.face)
+                if changed_edge.twin.face in faces_to_look_at:
+                    faces_to_look_at.remove(changed_edge.twin.face)
+        else:
+            result.step(face, color="#BCD8B7")
+                    
 
     return result
 
 # Helper Functions 
 
-def _calculate_steiner_point(face: geo.Face) -> geo.Vertex:
+def _calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     """
     Berechnet einen Steiner-Punkt für ein Dreieck, indem ein rechter Winkel
     von der stumpfen Ecke zur gegenüberliegenden Kante hergestellt wird.
@@ -73,7 +91,7 @@ def _calculate_steiner_point(face: geo.Face) -> geo.Vertex:
 
     obtuse_index = max(range(3), key=lambda i: angles[i])
     if angles[obtuse_index] <= np.pi / 2:
-        return None  # Kein stumpfer Winkel
+        return None, None  # Kein stumpfer Winkel
 
     # Definiere die Punkte
     A = vertices[obtuse_index]  # Stumpfer Winkel
@@ -102,7 +120,10 @@ def _calculate_steiner_point(face: geo.Face) -> geo.Vertex:
     else:  # Innerhalb der Kante
         steiner_point_position = projection_point
 
-    return geo.Vertex(steiner_point_position[0], steiner_point_position[1])
+    # Finde kante von B nach C
+    changed_edge = [edge for edge in B.edges if edge.twin.origin == C][0]
+
+    return geo.Vertex(steiner_point_position[0], steiner_point_position[1]), changed_edge
 
 
 
@@ -115,24 +136,26 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
+
     for edge in edges:
         new_edge = geo.HalfEdge(steiner_point, edge.origin)
         geo.connect_to_grid(new_edge)
+        new_edge.origin.edges.append(new_edge)
+        new_edge.twin.origin.edges.append(new_edge.twin)
         all_edges.append(new_edge)
         new_edges.append(new_edge)
+        new_edges.append(new_edge.twin)
         result.step(new_edge, color="green")  # Visualize the new edge
 
     # Create new faces for the triangulation
+    return_faces = []
     for edge in new_edges:
-        if geo.is_valid_triangle(edge):
-            new_face = geo.Face(edge, reference_from_below=True)
-            if geo.is_non_obtuse_triangle(new_face):
-                result.step(new_face, color="#BCD8B7")
-            else:
-                result.step(new_face, color="#ffc1cc")
+        #if geo.is_valid_triangle(edge):
+        new_face = geo.Face(edge, reference_from_below=True)
+        return_faces.append(new_face)
 
     #TODO: Gib die Faces um den neuen Steiner Punkt Zurück 
-
+    return return_faces
 
 def _sort_points_top_down(liste : list[geo.Vertex]) -> list[geo.Vertex]:
     """
