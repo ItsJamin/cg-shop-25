@@ -40,15 +40,17 @@ def greedy_top_down(problem: Problem) -> Result:
     # Fix obtuse triangles by placing Steiner points
     for face in faces_to_look_at:
         if not geo.is_non_obtuse_triangle(face):
+            #TODO: Schaue nach ob Kanten Tausch möglich um Steiner Punkte zu reduzieren
             steiner_point = _calculate_steiner_point(face)
             if steiner_point:
                 problem.g_points.append(steiner_point)
                 result.step(steiner_point, color="red")  # Visualize the Steiner point
                 _add_steiner_point_to_triangulation(steiner_point, face, all_edges, result)
+                
 
     return result
 
-# Helper Functions #
+# Helper Functions 
 
 def _calculate_steiner_point(face: geo.Face) -> geo.Vertex:
     """
@@ -105,10 +107,11 @@ def _calculate_steiner_point(face: geo.Face) -> geo.Vertex:
 
 
 
-def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], result: Result):
+def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], result: Result) -> list[geo.Face]:
     """
     Updates the triangulation to include a Steiner point by splitting the obtuse triangle into smaller triangles.
     """
+
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
@@ -128,13 +131,14 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
             else:
                 result.step(new_face, color="#ffc1cc")
 
-
+    #TODO: Gib die Faces um den neuen Steiner Punkt Zurück 
 
 
 def _sort_points_top_down(liste : list[geo.Vertex]) -> list[geo.Vertex]:
     """
     Sort list of points from top to bottom (y-axis)
     """
+
     n = len(liste)
     for i in range(n):
         for j in range(i + 1, n):
