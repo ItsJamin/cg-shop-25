@@ -15,8 +15,6 @@ class Problem():
         self.g_region_boundary = None
         self.g_constraints = []
 
-        self.v_elements = [] # Liste der zu animierenden Elemente
-
         self.create_geometry()
     
     def create_geometry(self):
@@ -25,18 +23,18 @@ class Problem():
         self.g_region_boundary = None
         self.g_constraints = []
         
-        # Erstellen der Punkte
+        # create geoemtric points
         for x,y in zip(self.points_x,self.points_y):
             p = geo.Vertex(x,y)
             self.g_points.append(p)
         
         
-        # Schliesst Boundary-Kreis mit Startpunkt
+        # closes bounding box with startpoint
         bound = self.region_boundary + [self.region_boundary[0]]
         last_edge = None
         start_edge = None
 
-        # Boundary als HalfEdge-Verkettung realisieren
+        # representing boundary by connected list of HalfEdges
         for i in range(len(bound)-1):
 
             current = geo.HalfEdge(self.g_points[bound[i]], self.g_points[bound[i+1]], reference_from_below=True, is_constraint=True)
@@ -52,7 +50,7 @@ class Problem():
 
         self.g_region_boundary = geo.Face(start_edge)
 
-        # Additional-Constraints als HalfEdge-Verkettung realisieren
+        # additional constaints as HalfEdges
         for constraint in self.additional_constraints:
             a, b = constraint
             edge1 = geo.HalfEdge(self.g_points[a], self.g_points[b], is_constraint=True)
@@ -60,7 +58,7 @@ class Problem():
             self.g_constraints.append(edge1)
 
     def validate_problem(self):
-        # TODO: Validiere dass das Problem korrekt formuliert ist
+        # TODO: validate that the problem is well-formed
         pass
 
     

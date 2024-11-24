@@ -4,19 +4,17 @@ import numpy as np
 class Result():
     def __init__(self) -> None:
 
-        #TODO: Implement for Result necessary variables (and funcs)
+        #TODO: implement for result necessary variables (and funcs)
         
-        self.v_elements = []
+        self.v_elements = [] # list of elements to animate
 
 
 
     def step(self, object, color="orange"):
         """
-        Diese Funktion fügt ein Objekt zur Liste der zu animierenden Elemente hinzu.
+        This function registers an object to be animated.
 
-        Parameter:
-        - object (Vertex oder HalfEdge): Das zu animierende Objekt.
-        - color (str, optional): Die Farbe des Objekts in der Animation. Standardmäßig "orange"
+        object: Vertex, HalfEdge or Face
         """
         points = None
         if type(object) == geo.Vertex:

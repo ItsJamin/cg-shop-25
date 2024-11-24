@@ -3,7 +3,7 @@ import numpy as np
 
 def connect_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     """
-    Verlinkt zwei Anliegende Kanten miteinander. Reihenfolge ist wichtig!
+    Links to neighbouring edges together. Order is important!
     edge1 -> Point -> edge2
     """
 
@@ -19,7 +19,10 @@ def connect_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     edge1.twin.prev = edge2.twin
     edge2.twin.next = edge1.twin
 
-def is_valid_triangle(edge : HalfEdge):
+def is_valid_triangle(edge : HalfEdge) -> bool:
+    """
+    Checks for triangles bei going through the linked edges three times and expecting to be at the start edge.
+    """
 
     current_n = edge
     current_p = edge
@@ -34,26 +37,35 @@ def is_valid_triangle(edge : HalfEdge):
     return current_n == edge and current_p == edge
 
 
-def is_non_obtuse_triangle(face : Face):
-    # Prüft, ob edge und seine Nachbarn existieren und alle Twin-Edges haben
+def is_non_obtuse_triangle(face : Face) -> bool:
+    
     edge = face.edge
-    # Berechne die Richtungsvektoren der Kanten des Dreiecks
-    v1 = edge.direction()
-    v2 = edge.next.direction()
-    v3 = edge.next.next.direction()
+    if is_valid_triangle(edge): 
+        v1 = edge.direction()
+        v2 = edge.next.direction()
+        v3 = edge.next.next.direction()
 
-    # Berechne die Winkel zwischen den Kantenpaaren
-    angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-    angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
-    angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
-    
-    # Prüfe, ob alle Winkel ≤ 90 Grad sind (π/2)
-    return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
-    
-    return False  # Falls kein gültiges Dreieck vorliegt
+        angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+        angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
+        angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
+        
+        # Checks if all anges are ≤ 90 degrees (π/2)
+        return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
+    return False
 
-def connect_to_grid(edge : HalfEdge):
+def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
+    """
+    Connects a given HalfEdge to a grid by finding the closest and farthest edges from its origin and twin's origin.
+    It then updates the next and prev pointers of the HalfEdges to form a closed loop.
+    If the HalfEdge is not already in its origin's edges list, it adds it.
+    Finally, it creates Faces if the connected edges form valid triangles.
 
+    Parameters:
+    edge (HalfEdge): The HalfEdge to connect to the grid.
+
+    Returns:
+    tuple[Face, Face]: A tuple containing the created Face objects. If no Face is created, the corresponding value is None.
+    """
     # Endpoint 
     close_edge, far_edge = get_min_max_angle_edges(edge.twin, edge.twin.origin.edges)
 
@@ -74,64 +86,59 @@ def connect_to_grid(edge : HalfEdge):
         edge.prev = far_edge.twin
         far_edge.twin.next = edge
 
-
+    # Add HalfEdge to origin's edges list if not already present
     if edge not in edge.origin.edges:
         edge.origin.edges.append(edge)
     if edge.twin not in edge.twin.origin.edges:
         edge.twin.origin.edges.append(edge.twin)
 
     face, face_twin = None, None
-    # Create Faces
-    if (is_valid_triangle(edge)):
+    # Create Faces if connected edges form valid triangles
+    if is_valid_triangle(edge):
         face = Face(edge, reference_from_below=True)
-    if (is_valid_triangle(edge.twin)):
+    if is_valid_triangle(edge.twin):
         face_twin = Face(edge.twin, reference_from_below=True)
-    
-    print(face, face_twin)
 
     return face, face_twin
 
 def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> tuple[HalfEdge, HalfEdge]:
     """
-    Berechnet die Winkel zwischen einer gegebenen HalfEdge und einer Liste von HalfEdges.
-    Gibt die Kanten mit dem minimalen und maximalen Winkel zurück.
+    This function calculates the HalfEdges in the given edge_list that have the smallest and largest angles 
+    with respect to the direction of the base_edge.
 
-    Args:
-        base_edge (HalfEdge): Die Ausgangskante, deren Winkel zu anderen gemessen werden.
-        edge_list (list[HalfEdge]): Eine Liste von HalfEdges, zu denen die Winkel berechnet werden.
+    Parameters:
+    base_edge (HalfEdge): The base HalfEdge to compare the angles with.
+    edge_list (list[HalfEdge]): A list of HalfEdges to calculate the angles for.
 
     Returns:
-        tuple: Ein Tupel (min_edge, max_edge, min_angle, max_angle), wobei
-            min_edge die Kante mit dem kleinsten Winkel ist,
-            max_edge die Kante mit dem größten Winkel ist,
-            min_angle und max_angle die entsprechenden Winkel in Grad sind.
+    tuple[HalfEdge, HalfEdge]: A tuple containing the HalfEdge with the smallest angle (min_edge) and the HalfEdge with the largest angle (max_edge).
+    If the edge_list is empty, the function returns (None, None).
     """
-    
     base_dir = base_edge.direction()
-    base_dir = base_dir / np.linalg.norm(base_dir)  # Normalisieren
-    
+    base_dir = base_dir / np.linalg.norm(base_dir)  # Normalize
+
     if len(edge_list) == 0:
         return (None,None)
 
     angles = []
     for edge in edge_list:
-        
+
         edge_dir = edge.direction()
-        edge_dir = edge_dir / np.linalg.norm(edge_dir)  # Normalisieren
-        
-        # Winkel berechnen
+        edge_dir = edge_dir / np.linalg.norm(edge_dir)  # Normalize
+
+        # Calculate angle
         dot_product = np.dot(base_dir, edge_dir)
         cross_product = np.cross(base_dir, edge_dir)
-        
-        # Winkel in Radiant berechnen und orientiert machen
-        angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 liefert orientierte Winkel
 
-        # Angle in bereich 0 bis 360 cappen
+        # Calculate angle in radians and make it oriented
+        angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns oriented angle
+
+        # Cap angle in range 0 to 360
         angle = angle % 360
-        angles.append((edge, angle))  # In Grad umwandeln
-    
-    # Min und Max Winkel finden
+        angles.append((edge, angle))  # Convert angle to degrees
+
+    # Find min and max angle
     min_edge, min_angle = min(angles, key=lambda x: x[1])
     max_edge, max_angle = max(angles, key=lambda x: x[1])
-    
+
     return (min_edge, max_edge)

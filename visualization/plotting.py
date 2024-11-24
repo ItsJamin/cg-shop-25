@@ -38,7 +38,10 @@ def plot_problem(instance: Problem):
 
 def animate_algorithm(instance: Problem, solution: Result, interval : int = 400, show_faces : bool = True):
     """
-    Animiert die (Lösungs-)Schritte in einem Problem mit Warteintervallen in Millisekunden.
+    Animate the algorithm steps in result.
+
+    interval: time between animation steps (in milliseconds)
+    show_faces: whether to show faces (default) in animation or not
     """
 
     # Nehme das visualisierte Problem als Vorlage

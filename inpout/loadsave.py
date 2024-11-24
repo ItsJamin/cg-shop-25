@@ -2,8 +2,8 @@ import json
 
 from instance import Problem
 
-# Erstelle eine Instanz vom Problem
-def load_problem(filename):
+def load_problem(filename : str) -> Problem:
+    """Create instance of the problem."""
     with open("assets/"+filename, 'r') as f:
         data =json.load(f)
     
@@ -12,5 +12,5 @@ def load_problem(filename):
     return problem_instance
 
 def save_result(result):
-    # TODO: aus Result Objekt eine Result Datei machen
+    # TODO: create result fiel from result object
     pass
