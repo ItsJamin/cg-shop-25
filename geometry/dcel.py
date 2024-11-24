@@ -46,6 +46,8 @@ class HalfEdge:
         if self.twin and not twin.twin:
             twin.twin = self
         elif not self.twin and endpoint:
+            if all([i == j for i, j in zip(origin.position(), endpoint.position())]):
+                raise Exception("HalfEdge darf nicht auf gleichen Punkt zeigen")
             self.twin = HalfEdge(endpoint, twin=self, reference_from_below=reference_from_below)
         self.next = next
         self.prev = prev
@@ -168,25 +170,25 @@ def edges_intersect(edge1 : HalfEdge, edge2 : HalfEdge) -> bool:
         if edge1.twin.origin == edge2.twin.origin:
             return True
 
-        return False
+        return False # TODO: kann trotzdem intersecten
     elif  edge1.origin == edge2.twin.origin:
 
         if edge1.twin.origin == edge2.origin:
             return True
 
-        return False
+        return False # TODO: kann trotzdem intersecten
     elif  edge1.twin.origin == edge2.twin.origin:
 
         if edge1.origin == edge2.origin:
             return True
 
-        return False
+        return False # TODO: kann trotzdem intersecten
     elif  edge1.twin.origin == edge2.origin:
 
         if edge1.origin == edge2.twin.origin:
             return True
 
-        return False
+        return False # TODO: kann trotzdem intersecten
 
     def ccw(a, b, c):
         """

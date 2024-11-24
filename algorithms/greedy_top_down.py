@@ -52,6 +52,7 @@ def greedy_top_down(problem: Problem) -> Result:
             changed_edge.twin.origin.edges.remove(changed_edge.twin)
 
             if steiner_point:
+                print("Adde Steiner Punkt ", steiner_point)
                 problem.g_points.append(steiner_point) #wahrshcienlich eher bei result
                 result.step(steiner_point, color="red")  # Visualize the Steiner point
                 new_faces = _add_steiner_point_to_triangulation(steiner_point, face, all_edges, result)
@@ -136,7 +137,7 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
-
+    print("Kanten des Dreiecks wo Steinerpunkt hinzugefügt wird", edges)
     for edge in edges:
         new_edge = geo.HalfEdge(steiner_point, edge.origin)
         geo.connect_to_grid(new_edge)
