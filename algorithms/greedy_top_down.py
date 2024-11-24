@@ -2,15 +2,17 @@ from instance import Problem, Result
 import geometry as geo
 
 def greedy_top_down(problem : Problem) -> Result:
+    """
+    Computes a top down triangulation and afterwards (TODO) fixes obtuse angles.
+    """
 
     result = Result()
 
     all_edges = problem.g_constraints + problem.g_region_boundary.get_edges()
+    faces_to_look_at = []
 
-    #erstelle sortierte liste, angefangen mit dem höchsten punkt
+    # create sorted list of points from top to bottom
     points = _sort_points_top_down(problem.g_points)
-
-    print(points)
 
     for index, point in enumerate(points):
 
@@ -18,38 +20,39 @@ def greedy_top_down(problem : Problem) -> Result:
 
         for prev_point in points[:index]:
 
-            print("--Schaut auf ", prev_point.position())
-            
-            temp_edge = geo.HalfEdge(point, prev_point)
-            
+            print("--Looks at PrevPoint: ", prev_point.position())           
+            temp_edge = geo.HalfEdge(point, prev_point)          
 
             if _no_edge_intersection(temp_edge, all_edges) and _edge_in_boundary(temp_edge, problem.g_region_boundary):
                 
+                print("--Edge okay, adding it...")
                 
-                print("Edge okay")
-
-                # Edge ist okay
                 all_edges.append(temp_edge)
-                result.step(temp_edge, color="orange")
-
-                # TODO: verkettung der edge mit dem rest.
                 geo.connect_to_grid(temp_edge)
+
+                result.step(temp_edge, color="orange")
 
                 for f in [temp_edge.face, temp_edge.twin.face]:
                     if f:
                         if geo.is_non_obtuse_triangle(f):
-                                result.step(f, color="#BCD8B7")
+                            result.step(f, color="#BCD8B7")
                         else:
+                            # if obtuse triangle, save for later to look at
+                            faces_to_look_at.append(f)
                             result.step(f, color="#ffc1cc")
-            
+    
+    for face in faces_to_look_at:
+        # TODO: removing obtuse triangles
+        pass
 
     return result
 
-# Hilfsfunktionen #
 
-def _sort_points_top_down(liste : list[geo.Vertex]):
+# Helping Functions #
+
+def _sort_points_top_down(liste : list[geo.Vertex]) -> list[geo.Vertex]:
     """
-    Sortiert die Liste der Punkte (Vertex) von oben nach unten.
+    Sort list of points from top to bottom (y-axis)
     """
     n = len(liste)
     for i in range(n):
@@ -58,22 +61,20 @@ def _sort_points_top_down(liste : list[geo.Vertex]):
                 liste[i], liste[j] = liste[j], liste[i]
     return liste
 
-def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.HalfEdge]):
+def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.HalfEdge]) -> bool:
     """
-    Überprüft ob eine neue Kante mit bereits existierenden Kanten sich überschneiden.
+    Checks if an edge intersect with a given array of existing edges
     """
     for edge in existing_edges:
         if geo.edges_intersect(new_edge, edge):
-            print("Intersektion mit ", edge)
+            print(f"{new_edge} intersects with {edge}")
             return False
     return True
 
-def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face):
+def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face) -> bool:
     """
-    Überprüft das eine Kante in einer Fläche liegt. True wenn in der Fläche.
+    Checks if an edge is inside the boundary through checking if the middle point would be inside the boundary.
     """
-    print("Nicht in boundary")
     middle = geo.Vertex(*((edge.twin.origin.position() + edge.origin.position())/2))
-    print(middle)
 
     return boundary.is_point_in_face(middle)
