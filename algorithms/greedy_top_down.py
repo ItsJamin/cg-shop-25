@@ -43,6 +43,7 @@ def greedy_top_down(problem : Problem) -> Result:
     
     for face in faces_to_look_at:
         # TODO: removing obtuse triangles
+        # IMPORTANT: Faces created by just constraints+boundary are not considered yet
         pass
 
     return result
