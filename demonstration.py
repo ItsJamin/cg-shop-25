@@ -6,8 +6,8 @@ import algorithms as alg
 if __name__ == '__main__':
 
     # create problem from json file
-    #problem = inp.load_problem("cgshop2025_examples_simple-polygon-exterior_20_98b56c77.instance.json")
-    problem = inp.load_problem(inp.get_random_file_from_dir())
+    problem = inp.load_problem("test.json")
+    #problem = inp.load_problem(inp.get_random_file_from_dir())
 
     # execute the greedy algorithm
     solution = alg.greedy_top_down(problem)

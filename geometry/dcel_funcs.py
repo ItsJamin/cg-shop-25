@@ -124,6 +124,9 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     for edge in edge_list:
 
         edge_dir = edge.direction()
+        if edge.origin.position()[0] == edge.twin.origin.position()[0] and edge.origin.position()[1] == edge.twin.origin.position()[1]:
+            print("DU OPfa")
+            raise Exception("Du tru")
         edge_dir = edge_dir / np.linalg.norm(edge_dir)  # Normalize
 
         # Calculate angle
