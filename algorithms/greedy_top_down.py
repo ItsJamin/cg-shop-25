@@ -8,21 +8,22 @@ def greedy_top_down(problem: Problem) -> Result:
     """
     result = Result()
 
-    all_edges = problem.g_constraints + problem.g_region_boundary.get_edges()
+    all_edges = problem.g_constraints + problem.g_region_boundary.edges
     faces_to_look_at = []
 
     # create sorted list of points from top to bottom
     points = _sort_points_top_down(problem.g_points)
 
     for index, point in enumerate(points):
-        print(index, point.position())
+        #print(index, point.position())
 
         for prev_point in points[:index]:
-            print("--Looks at PrevPoint: ", prev_point.position())           
+            #print("--Looks at PrevPoint: ", prev_point.position())           
             temp_edge = geo.HalfEdge(point, prev_point)          
 
             if _no_edge_intersection(temp_edge, all_edges) and _edge_in_boundary(temp_edge, problem.g_region_boundary):
-                print("--Edge okay, adding it...")
+                #print("--Edge okay, adding it...")
+                #print(temp_edge)
                 all_edges.append(temp_edge)
                 geo.connect_to_grid(temp_edge)
 
@@ -36,35 +37,48 @@ def greedy_top_down(problem: Problem) -> Result:
                             # if obtuse triangle, save for later to look at
                             faces_to_look_at.append(f)
                             result.step(f, color="#ffc1cc")
-
+            else:
+                pass#print("Not taking ", temp_edge)
+                
     # Fix obtuse triangles by placing Steiner points
-    for i, face in enumerate(faces_to_look_at):
-        print(i)
+    j = 0
+    #for i, face in enumerate(faces_to_look_at):
+
+    # Handling faces_to_look_at as a stack
+    while len(faces_to_look_at) > 0:
+
+        face = faces_to_look_at.pop()
+        print("Next Face: ", face)
         if not geo.is_non_obtuse_triangle(face):
-            if len(face.get_vertices()) > 3:
+            if len(face.vertices) > 3:
                 # TODO: wenn kein Dreieck, trianguliere
                 continue
 
             #TODO: Schaue nach ob Kanten Tausch möglich um Steiner Punkte zu reduzieren
             steiner_point, changed_edge = _calculate_steiner_point(face)
             
-            changed_edge.origin.edges.remove(changed_edge)
-            changed_edge.twin.origin.edges.remove(changed_edge.twin)
 
             if steiner_point:
-                print("Adde Steiner Punkt ", steiner_point)
+                geo.loose_edge(changed_edge)
+                print("Adding Steiner point on edge: ", changed_edge)
                 problem.g_points.append(steiner_point) #wahrshcienlich eher bei result
                 result.step(steiner_point, color="red")  # Visualize the Steiner point
-                new_faces = _add_steiner_point_to_triangulation(steiner_point, face, all_edges, result)
-                for face in new_faces:
-                    faces_to_look_at.insert(i+1, face)
+                result.step(changed_edge, color="white")
+                new_faces = _add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
+                for f in new_faces:
+                    faces_to_look_at.append(f)
                 
                 if changed_edge.face in faces_to_look_at:
                     faces_to_look_at.remove(changed_edge.face)
                 if changed_edge.twin.face in faces_to_look_at:
                     faces_to_look_at.remove(changed_edge.twin.face)
+                
+                j+=1
+                #if j == 10:
+                #    return result
         else:
             result.step(face, color="#BCD8B7")
+        
                     
 
     return result
@@ -129,7 +143,7 @@ def _calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
 
 
 
-def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], result: Result) -> list[geo.Face]:
+def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], changed_edge : geo.HalfEdge, result: Result) -> list[geo.Face]:
     """
     Updates the triangulation to include a Steiner point by splitting the obtuse triangle into smaller triangles.
     """
@@ -141,19 +155,19 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
     for edge in edges:
         new_edge = geo.HalfEdge(steiner_point, edge.origin)
         geo.connect_to_grid(new_edge)
-        new_edge.origin.edges.append(new_edge)
-        new_edge.twin.origin.edges.append(new_edge.twin)
         all_edges.append(new_edge)
         new_edges.append(new_edge)
-        new_edges.append(new_edge.twin)
         result.step(new_edge, color="green")  # Visualize the new edge
 
     # Create new faces for the triangulation
     return_faces = []
     for edge in new_edges:
         #if geo.is_valid_triangle(edge):
+        print(edge, edge.next, edge.next.next)
         new_face = geo.Face(edge, reference_from_below=True)
-        return_faces.append(new_face)
+        if new_face.is_clockwise():
+            result.step(new_face, color="#ADADFF")
+            return_faces.append(new_face)
 
     #TODO: Gib die Faces um den neuen Steiner Punkt Zurück 
     return return_faces

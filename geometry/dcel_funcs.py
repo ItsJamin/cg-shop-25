@@ -1,4 +1,4 @@
-from .dcel import Vertex, HalfEdge, Face, edges_intersect
+from .dcel import *
 import numpy as np
 
 def connect_edges(edge1 : HalfEdge, edge2 : HalfEdge):
@@ -41,16 +41,28 @@ def is_non_obtuse_triangle(face : Face) -> bool:
     
     edge = face.edge
     if is_valid_triangle(edge): 
-        v1 = edge.direction()
-        v2 = edge.next.direction()
-        v3 = edge.next.next.direction()
+        e1 = edge
+        e2 = edge.next
+        e3 = edge.next.next
 
-        angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-        angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
-        angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
+        #angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+        #angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
+        #angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
+
+        angle1 = angle_between_edges(e1.twin, e2)
+        angle2 = angle_between_edges(e2.twin, e3)
+        angle3 = angle_between_edges(e3.twin, e1)
         
         # Checks if all anges are ≤ 90 degrees (π/2)
-        return all(angle <= np.pi / 2 for angle in [angle1, angle2, angle3])
+        # Due to computation errors, angle just needs to be close 90 degrees TODO: other method?
+        angles = []
+        for angle in [angle1, angle2, angle3]:
+            
+            if np.isclose(angle, 90):
+                angles.append(90)
+            else:
+                angles.append(angle)
+        return all(angle <= 90 for angle in angles)
     return False
 
 def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
@@ -101,6 +113,13 @@ def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
 
     return face, face_twin
 
+def loose_edge(edge: HalfEdge):
+    """Uncopples edge from its prev and next and from the points"""
+
+    edge.origin.edges.remove(edge)
+    edge.twin.origin.edges.remove(edge.twin)
+
+
 def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> tuple[HalfEdge, HalfEdge]:
     """
     This function calculates the HalfEdges in the given edge_list that have the smallest and largest angles 
@@ -114,6 +133,8 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     tuple[HalfEdge, HalfEdge]: A tuple containing the HalfEdge with the smallest angle (min_edge) and the HalfEdge with the largest angle (max_edge).
     If the edge_list is empty, the function returns (None, None).
     """
+
+    # TODO: durch angle-func ersetzen
     base_dir = base_edge.direction()
     base_dir = base_dir / np.linalg.norm(base_dir)  # Normalize
 
@@ -124,9 +145,6 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     for edge in edge_list:
 
         edge_dir = edge.direction()
-        if edge.origin.position()[0] == edge.twin.origin.position()[0] and edge.origin.position()[1] == edge.twin.origin.position()[1]:
-            print("DU OPfa")
-            raise Exception("Du tru")
         edge_dir = edge_dir / np.linalg.norm(edge_dir)  # Normalize
 
         # Calculate angle

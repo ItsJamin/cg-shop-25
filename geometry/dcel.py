@@ -47,7 +47,7 @@ class HalfEdge:
             twin.twin = self
         elif not self.twin and endpoint:
             if all([i == j for i, j in zip(origin.position(), endpoint.position())]):
-                raise Exception("HalfEdge darf nicht auf gleichen Punkt zeigen")
+                raise Exception("HalfEdge darf nicht auf gleichen Punkt zeigen", origin.position(), endpoint.position())
             self.twin = HalfEdge(endpoint, twin=self, reference_from_below=reference_from_below)
         self.next = next
         self.prev = prev
@@ -82,42 +82,82 @@ class Face:
         -> Wanted if face is not temporary and should be part of the grid.
         """
         self.edge = edge
+        self.edges = self._get_edges()
+        self.vertices = self._get_vertices()
 
         if reference_from_below:
             self.set_face_of_edges()
     
+
+    def is_clockwise(self) -> bool:
+        """
+        Determines if the edges of a face are iterated in a clockwise direction.
+
+        Parameters:
+            face (Face): The face object containing a reference to one of its half-edges.
+
+        Returns:
+            bool: True if the edges are iterated clockwise, False otherwise.
+        """
+        # Start from an arbitrary half-edge of the face
+        
+        start_edge = self.edge
+        edge = start_edge
+
+        # Initialize the signed area
+        signed_area = 0
+
+        # Iterate through the edges of the face
+        while True:
+            # Get the origin and destination vertices of the edge
+            origin = edge.origin
+            destination = edge.twin.origin
+
+            # Add the contribution to the signed area
+            signed_area += (origin.x * destination.y - origin.y * destination.x)
+
+            # Move to the next edge
+            edge = edge.next
+
+            # Stop if we are back at the starting edge
+            if edge == start_edge:
+                break
+
+        # Determine the orientation based on the signed area
+        return signed_area < 0  # Negative signed area means clockwise
+
+
     def __repr__(self):
-        return f"[{self.get_vertices()}]"
+        return f"[{self.vertices}]"
 
     def set_face_of_edges(self):
-        for edge in self.get_edges():
+        for edge in self._get_edges():
                 edge.face = self
     
-    def get_edges(self) -> list[HalfEdge]:
-        """Gives all halfedges that are part of this face."""
+    def _get_edges(self) -> list[HalfEdge]:
+        """Gives all HalfEdges that are part of this face."""
         if not self.edge:
             return []
         result = []
         start = self.edge
         current = start
-        while True:
-            if not current:
-                raise Exception("Not closed Face, missing Edges!")
 
+        while current not in result:
             result.append(current)
             current = current.next
-            if current == start:
-                break
+        
+        if current != start:
+            raise Exception("Face is not closed! Iterating through edges did not end in starting edge.")
         
         return result
     
-    def get_vertices(self) -> list[Vertex]:
+    def _get_vertices(self) -> list[Vertex]:
         """Gives all vertices of face in cyclical order."""
-        return [edge.origin for edge in self.get_edges()]
+        return [edge.origin for edge in self._get_edges()]
 
     def get_area(self) -> float:
         """Calculates area of face with shoelace formula."""
-        vertices = self.get_vertices()
+        vertices = self._get_vertices()
         n = len(vertices)
         if n < 3:  # no valid polygon
             return 0
@@ -134,84 +174,151 @@ class Face:
         Check if a given vertex is inside the face.
         Uses the Ray-Casting algorithm and the `edges_intersect` method.
         """
-        vertices = self.get_vertices()
-        n = len(vertices)
+        edges = self.edges#_get_edges()
 
         # if less than 3 vertices, it's not a valid polygon
-        if n < 3:
+        if len(edges) < 3:
+            print("No polygon", len(edges))
             return False
 
         # create a horizontal line from 'vertex' and count intersection points with the edges
-        ray_start = Vertex( float('-inf'), vertex.y)
-        ray_end = Vertex(float('inf'), vertex.y)  # infinite in x-direction
+        # "infinite" in x-direction
+        # infinity not possible due to area calculations so just over max x as replacement
+        ray_end_x = Vertex(max(self.vertices, key=lambda v: v.x).x+1, vertex.y)  
+        ray_end_y = Vertex(max(self.vertices, key=lambda v: v.y).y+1, vertex.y)
 
-        ray_edge = HalfEdge(vertex, ray_end)
+        ray_edge_horizontal = HalfEdge(vertex, ray_end_x)
+        ray_edge_vertical = HalfEdge(vertex, ray_end_y)
+
         intersect_count = 0
 
-        for i in range(n):
-            v1 = vertices[i]
-            v2 = vertices[(i + 1) % n]
-
-            # create the HalfEdges for the current edge
-            edge = HalfEdge(v1,v2)
+        for edge in edges:
 
             # check if the horizontal line from ray_start to ray_end intersects the edge
-            if edges_intersect(edge, ray_edge):
+            if edges_intersect(edge, ray_edge_horizontal) or edges_intersect(edge, ray_edge_vertical):
+                print(f"{vertex}-Ray goes through {edge}")
                 intersect_count += 1
 
         # if the number of intersection points is odd, the point is inside
+        print(intersect_count)
         return intersect_count % 2 == 1
 
 
-def edges_intersect(edge1 : HalfEdge, edge2 : HalfEdge) -> bool:
-    """Checks if two HalfEdges (with twins) intersect."""
-    if edge1.origin == edge2.origin:
+def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
+    """
+    Determines if two edges (with twins) intersect.
+    
+    Lines intersects when:
+    - they have two common endpoints
+    - they have one common endpoint and overlap
+    - they cross each other
+    - they are on the same line and overlap
 
-        if edge1.twin.origin == edge2.twin.origin:
+    Lines do not intersect when:
+    - they have one common endpoint and do not overlap
+    - they do not cross and have no common endpoint
+    """
+
+    def area(p1, p2, p3):
+        """Calculates the signed area of the triangle formed by three points."""
+        return 0.5 * ((p1[0] * (p2[1] - p3[1]) +
+                       p2[0] * (p3[1] - p1[1]) +
+                       p3[0] * (p1[1] - p2[1])))
+
+    common_endpoints = count_same_endpoints(edge1, edge2)
+
+    if common_endpoints == 2:
+        #print("||| Have same points")
+        return True
+    elif common_endpoints == 1:
+        # TODO: check for collinearity
+        p1 = edge1.origin.position()
+        p2 = edge1.twin.origin.position()
+        p3 = edge2.origin.position()
+        p4 = edge2.twin.origin.position()
+
+        # Find the two edges that need to be looked at from the common point
+        angle_edges = []
+        if np.array_equal(p1, p3):
+            angle_edges = [edge1, edge2]
+        elif np.array_equal(p2, p3):
+            angle_edges = [edge1.twin, edge2]
+        elif np.array_equal(p1, p4):
+            angle_edges = [edge1, edge2.twin]
+        else: # has to be p2, p4
+            angle_edges = [edge1.twin, edge2.twin]
+        
+        angle = angle_between_edges(*angle_edges)
+        #print(f"||| Have ome point in common and angle is, ", angle)
+        if angle == 0:
             return True
+        else:
+            return False
+            
 
-        return False # TODO: kann trotzdem intersecten
-    elif  edge1.origin == edge2.twin.origin:
+    else:
+        # Check if lines intersect (using area method)
+        p1 = edge1.origin.position()
+        p2 = edge1.twin.origin.position()
+        p3 = edge2.origin.position()
+        p4 = edge2.twin.origin.position()
 
-        if edge1.twin.origin == edge2.origin:
+        # Calculate areas
+        a1 = area(p1, p2, p3)
+        a2 = area(p1, p2, p4)
+        a3 = area(p3, p4, p1)
+        a4 = area(p3, p4, p2)
+
+        # Check if areas have opposite signs
+        if a1 * a2 <= 0 and a3 * a4 <= 0:
             return True
+        
+        #print("|||Have no points and common and do not intersect")
 
-        return False # TODO: kann trotzdem intersecten
-    elif  edge1.twin.origin == edge2.twin.origin:
+        # Check for collinear overlap
+        #if np.isclose(a1, 0) or np.isclose(a2, 0) or np.isclose(a3, 0) or np.isclose(a4, 0):
+        #    # TODO: Check if collinear segments overlap
+        #    pass
 
-        if edge1.origin == edge2.origin:
-            return True
+    return False
 
-        return False # TODO: kann trotzdem intersecten
-    elif  edge1.twin.origin == edge2.origin:
+def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
+    """
+    Counts how many endpoints two edges share using sets.
+    """
+    endpoints1 = {tuple(edge1.origin.position()), tuple(edge1.twin.origin.position())}
+    endpoints2 = {tuple(edge2.origin.position()), tuple(edge2.twin.origin.position())}
+    return len(endpoints1 & endpoints2)
 
-        if edge1.origin == edge2.twin.origin:
-            return True
+import numpy as np
 
-        return False # TODO: kann trotzdem intersecten
+def angle_between_edges(edge1: HalfEdge, edge2: HalfEdge) -> float:
+    """
+    Calculates the angle (in degrees) between two edges.
 
-    def ccw(a, b, c):
-        """
-        Checks if the points a, b, c are ordered counterclockwise.
+    Parameters:
+        edge1 (HalfEdge): The first edge.
+        edge2 (HalfEdge): The second edge.
 
-        Parameters:
-        a (tuple): The first point.
-        b (tuple): The second point.
-        c (tuple): The third point.
+    Returns:
+        float: The angle between the two edges in degrees.
+    """
+    # Direction vectors of the two edges
+    dir1 = edge1.direction()
+    dir2 = edge2.direction()
 
-        Returns:
-        bool: True if the points are ordered counterclockwise, False otherwise.
-        """
-        return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0])
+    # Normalize the direction vectors
+    dir1 = dir1 / np.linalg.norm(dir1)
+    dir2 = dir2 / np.linalg.norm(dir2)
 
-    p1 = edge1.origin.position()
-    p2 = edge1.twin.origin.position() if edge1.twin else None
-    q1 = edge2.origin.position()
-    q2 = edge2.twin.origin.position() if edge2.twin else None
+    # Calculate the dot product and the cross product
+    dot_product = np.dot(dir1, dir2)
+    cross_product = np.cross(dir1, dir2)
 
-    if p2 is None or q2 is None:
-        raise ValueError("Both HalfEdges need a twin with a defined position.")
+    # Calculate the angle in radians using arctan2 for orientation
+    angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns the oriented angle
 
-    # check if the line segments intersect
-    return (ccw(p1, q1, q2) != ccw(p2, q1, q2)) and (ccw(p1, p2, q1) != ccw(p1, p2, q2))
+    # Cap angle in range 0 to 360
+    angle = angle % 360
 
+    return angle
