@@ -147,6 +147,8 @@ class Face:
             current = current.next
         
         if current != start:
+            for edge in result:
+                print(edge)
             raise Exception("Face is not closed! Iterating through edges did not end in starting edge.")
         
         return result
@@ -195,12 +197,13 @@ class Face:
         for edge in edges:
 
             # check if the horizontal line from ray_start to ray_end intersects the edge
-            if edges_intersect(edge, ray_edge_horizontal) or edges_intersect(edge, ray_edge_vertical):
-                print(f"{vertex}-Ray goes through {edge}")
+            # TODO: fix if horzontal is collinear with edge
+            if edges_intersect(edge, ray_edge_horizontal):
+                #print(f"{vertex}-Ray goes through {edge}")
                 intersect_count += 1
 
         # if the number of intersection points is odd, the point is inside
-        print(intersect_count)
+        #print(intersect_count)
         return intersect_count % 2 == 1
 
 
@@ -319,6 +322,6 @@ def angle_between_edges(edge1: HalfEdge, edge2: HalfEdge) -> float:
     angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns the oriented angle
 
     # Cap angle in range 0 to 360
-    angle = angle % 360
+    angle = angle % 360 % 360 #interesting modulo behavior where it needs it two times
 
     return angle

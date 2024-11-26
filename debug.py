@@ -7,14 +7,15 @@ import numpy as np
 if __name__ == '__main__':
     
     problem = inp.load_problem("test.json")
+    #problem = inp.load_problem("debug.json")
     #problem = inp.load_problem("cgshop2025_examples_ortho_150_a39ede60.instance.json")
+    #problem = inp.load_problem("cgshop2025_examples_ortho_60_f31194db.instance.json")
     #problem = inp.load_problem(inp.get_random_file_from_dir())
 
     solution = alg.greedy_top_down(problem)
-    #solution.step(problem.g_region_boundary)
     
     # visualize the problem and animate the solution steps. 
-    vis.animate_algorithm(problem, solution, interval=500, show_faces=True)
+    vis.animate_algorithm(problem, solution, interval=1, show_faces=True)
 
     p1 = geo.Vertex(2,0)
     p2 = geo.Vertex(2,5)
