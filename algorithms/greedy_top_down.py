@@ -17,7 +17,7 @@ def greedy_top_down(problem: Problem) -> Result:
     for index, point in enumerate(points):
         # try to draw edges to each point above
         for prev_point in points[:index]:
-            print(f"looking from {point} to {prev_point}")
+            #print(f"looking from {point} to {prev_point}")
             temp_edge = geo.HalfEdge(point, prev_point)          
 
             if _no_edge_intersection(temp_edge, all_edges) and _edge_in_boundary(temp_edge, problem.g_region_boundary):
@@ -40,7 +40,7 @@ def greedy_top_down(problem: Problem) -> Result:
     while len(faces_to_look_at) > 0:
 
         face = faces_to_look_at.pop()
-        print("Next Face: ", face)
+        #print("Next Face: ", face)
 
         if not geo.is_non_obtuse_triangle(face):
 
@@ -61,7 +61,7 @@ def greedy_top_down(problem: Problem) -> Result:
                 steiner_point, changed_edge = _calculate_steiner_point(face)
                 if steiner_point:
                     geo.loose_edge(changed_edge)
-                    print("Adding Steiner point on edge: ", changed_edge)
+                    #print("Adding Steiner point on edge: ", changed_edge)
                     problem.g_points.append(steiner_point) #TODO: save elsewhere (result, extra steiner pointsl ist)
                     result.step(steiner_point, color="red")  # visualize the steiner point
                     result.step(changed_edge, color="white")
@@ -149,7 +149,7 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
-    print("Kanten des Dreiecks wo Steinerpunkt hinzugefügt wird", edges)
+    #print("Kanten des Dreiecks wo Steinerpunkt hinzugefügt wird", edges)
     for edge in edges:
         new_edge = geo.HalfEdge(steiner_point, edge.origin)
         geo.connect_to_grid(new_edge)
@@ -161,7 +161,7 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
     return_faces = []
     for edge in new_edges:
         #if geo.is_valid_triangle(edge):
-        print(edge, edge.next, edge.next.next)
+        #print(edge, edge.next, edge.next.next)
         new_face = geo.Face(edge, reference_from_below=True)
         if new_face.is_clockwise():
             result.step(new_face, color="#ADADFF")
@@ -214,7 +214,7 @@ def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.Hal
     """
     for edge in existing_edges:
         if geo.edges_intersect(new_edge, edge):
-            print(f"{new_edge} intersects with {edge}")
+            #print(f"{new_edge} intersects with {edge}")
             return False
     return True
 
