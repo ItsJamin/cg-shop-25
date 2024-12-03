@@ -35,6 +35,7 @@ def greedy_top_down(problem: Problem) -> Result:
                             faces_to_look_at.append(f)
                             result.step(f, color="#ffc1cc")
 
+    return result
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
     while len(faces_to_look_at) > 0:

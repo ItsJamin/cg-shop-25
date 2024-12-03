@@ -1,1 +1,1 @@
-{"instance_uid":"debug","num_points":8,"points_x":[0,0,2,2,0,0,5,5],"points_y":[0,1,1,2,2,6,6,0],"region_boundary":[7,6,5,4,3,2,1,0],"num_constraints":0,"additional_constraints":[]}
+{"instance_uid":"debug","num_points":12,"points_x":[0,0,2,2,0,0,5,5,3,3,5,5],"points_y":[0,1,1,2,2,6,6,2,2,1,1,0],"region_boundary":[0,1,2,3,4,5,6,7,8,9,10,11],"num_constraints":0,"additional_constraints":[]}
