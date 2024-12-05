@@ -20,7 +20,7 @@ def greedy_top_down(problem: Problem) -> Result:
             #print(f"looking from {point} to {prev_point}")
             temp_edge = geo.HalfEdge(point, prev_point)          
 
-            if _no_edge_intersection(temp_edge, all_edges):# and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary)
+            if _no_edge_intersection(temp_edge, all_edges) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
                 all_edges.append(temp_edge)
                 geo.connect_to_grid(temp_edge)
 
@@ -35,7 +35,6 @@ def greedy_top_down(problem: Problem) -> Result:
                             faces_to_look_at.append(f)
                             result.step(f, color="#ffc1cc")
 
-    return result
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
     while len(faces_to_look_at) > 0:
