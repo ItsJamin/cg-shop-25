@@ -163,3 +163,194 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     max_edge, max_angle = max(angles, key=lambda x: x[1])
 
     return (min_edge, max_edge)
+
+
+def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
+    """
+    Determines if two edges (with twins) intersect.
+    
+    Lines intersects when:
+    - they have two common endpoints
+    - they have one common endpoint and overlap
+    - they cross each other
+    - they are on the same line and overlap
+
+    Lines do not intersect when:
+    - they have one common endpoint and do not overlap
+    - they do not cross and have no common endpoint
+    """
+
+    def area(p1, p2, p3):
+        """Calculates the signed area of the triangle formed by three points."""
+        return 0.5 * ((p1[0] * (p2[1] - p3[1]) +
+                       p2[0] * (p3[1] - p1[1]) +
+                       p3[0] * (p1[1] - p2[1])))
+
+    common_endpoints = count_same_endpoints(edge1, edge2)
+
+    if common_endpoints == 2:
+        #print("||| Have same points")
+        return True
+    elif common_endpoints == 1:
+        # TODO: check for collinearity
+        p1 = edge1.origin.position()
+        p2 = edge1.twin.origin.position()
+        p3 = edge2.origin.position()
+        p4 = edge2.twin.origin.position()
+
+        # Find the two edges that need to be looked at from the common point
+        angle_edges = []
+        debug = False
+        if np.array_equal(p1, p3):
+            if (np.array_equal(p1, [820107,0])):
+                debug = True
+            angle_edges = [edge1, edge2]
+        elif np.array_equal(p2, p3):
+            if (np.array_equal(p2, [820107,0])):
+                debug = True
+            angle_edges = [edge1.twin, edge2]
+        elif np.array_equal(p1, p4):
+            angle_edges = [edge1, edge2.twin]
+            if (np.array_equal(p1, [820107,0])):
+                debug = True
+        else: # has to be p2, p4
+            angle_edges = [edge1.twin, edge2.twin]
+            if (np.array_equal(p4, [820107,0])):
+                debug = True
+
+        angle = angle_between_edges(*angle_edges)
+        if debug:
+            print(edge1, edge2, "Angle", angle)
+        #print(f"||| Have ome point in common and angle is, ", angle)
+        if angle == 0:
+            return True
+        else:
+            return False
+            
+
+    else:
+        # Check if lines intersect (using area method)
+        p1 = edge1.origin.position()
+        p2 = edge1.twin.origin.position()
+        p3 = edge2.origin.position()
+        p4 = edge2.twin.origin.position()
+
+        debug = False
+        if (np.array_equal(p1, [820107,0])):
+            debug = True
+        if (np.array_equal(p2, [820107,0])):
+            debug = True
+        if (np.array_equal(p3, [820107,0])):
+            debug = True
+        if (np.array_equal(p4, [820107,0])):
+            debug = True
+
+        if debug:
+            pass#print("No commons:",edge1, edge2)
+
+        # Calculate areas
+        a1 = area(p1, p2, p3)
+        a2 = area(p1, p2, p4)
+        a3 = area(p3, p4, p1)
+        a4 = area(p3, p4, p2)
+
+        # Check if areas have opposite signs
+        if a1 * a2 <= 0 and a3 * a4 <= 0:
+            return True
+        
+        #print("|||Have no points and common and do not intersect")
+
+        # Check for collinear overlap
+        #if np.isclose(a1, 0) or np.isclose(a2, 0) or np.isclose(a3, 0) or np.isclose(a4, 0):
+        #    # TODO: Check if collinear segments overlap
+        #    pass
+
+    return False
+
+
+def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
+    """
+    Counts how many endpoints two edges share using sets.
+    """
+    endpoints1 = {tuple(edge1.origin.position()), tuple(edge1.twin.origin.position())}
+    endpoints2 = {tuple(edge2.origin.position()), tuple(edge2.twin.origin.position())}
+    return len(endpoints1 & endpoints2)
+
+import numpy as np
+
+def angle_between_edges(edge1: HalfEdge, edge2: HalfEdge) -> float:
+    """
+    Calculates the angle (in degrees) between two edges.
+
+    Parameters:
+        edge1 (HalfEdge): The first edge.
+        edge2 (HalfEdge): The second edge.
+
+    Returns:
+        float: The angle between the two edges in degrees.
+    """
+    # Direction vectors of the two edges
+    dir1 = edge1.direction()
+    dir2 = edge2.direction()
+
+    # Normalize the direction vectors
+    dir1 = dir1 / np.linalg.norm(dir1)
+    dir2 = dir2 / np.linalg.norm(dir2)
+
+    # Calculate the dot product and the cross product
+    dot_product = np.dot(dir1, dir2)
+    cross_product = np.cross(dir1, dir2)
+
+    # Calculate the angle in radians using arctan2 for orientation
+    angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns the oriented angle
+
+    # Cap angle in range 0 to 360
+    angle = angle % 360 % 360 #interesting modulo behavior where it needs it two times
+
+    return angle
+
+def is_edge_in_boundary(edge : HalfEdge, face : Face):
+    """
+    Checks if an edge is inside the face through a checking angle to edge_faces.
+    Assumptions: 
+    - No two points are outside the face
+    - Face is counter clockwise orientated
+    """
+
+    points_on_edge = 0
+    if edge.origin in face.vertices:
+        points_on_edge += 1
+    
+    if edge.twin.origin in face.vertices:
+        points_on_edge += 1
+    
+    if points_on_edge == 0:
+        return False
+    
+    if points_on_edge == 0:
+        return True
+
+
+    boundary_edge = None
+    edge_to_add = edge
+    for index, e in enumerate(face.edges):
+        if edge.origin == e.origin:
+            boundary_edge = e
+            break
+        
+        
+    
+    if not boundary_edge:
+        return True
+    else:
+        # look if new angle is smaller than current angle (should be greater)
+        previous_edge = face.edges[index-1].twin
+        current_angle = angle_between_edges(previous_edge, boundary_edge)
+
+        if angle_between_edges(previous_edge, edge_to_add) >= current_angle:
+            return True
+        else:
+            return False
+        
+
+        

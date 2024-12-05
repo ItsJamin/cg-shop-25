@@ -7,11 +7,11 @@ import numpy as np
 if __name__ == '__main__':
     
     #problem = inp.load_problem("test.json")
-    problem = inp.load_problem("debug.json")
+    #problem = inp.load_problem("debug2.json")
     #problem = inp.load_problem(inp.get_random_file_from_dir())
     
     # Problems that make problems:
-    #problem = inp.load_problem("cgshop2025_examples_ortho_150_a39ede60.instance.json") #triangulation problem
+    problem = inp.load_problem("cgshop2025_examples_ortho_150_a39ede60.instance.json") #triangulation problem
     #problem = inp.load_problem("cgshop2025_examples_ortho_60_f31194db.instance.json") #triangulation problem
     #problem = inp.load_problem("cgshop2025_examples_point-set_10_b4ff36df.instance.json") #steiner point recursion infinite problem
     

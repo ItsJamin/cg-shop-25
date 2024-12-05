@@ -20,7 +20,7 @@ def greedy_top_down(problem: Problem) -> Result:
             #print(f"looking from {point} to {prev_point}")
             temp_edge = geo.HalfEdge(point, prev_point)          
 
-            if _no_edge_intersection(temp_edge, all_edges) and _edge_in_boundary(temp_edge, problem.g_region_boundary):
+            if _no_edge_intersection(temp_edge, all_edges):# and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary)
                 all_edges.append(temp_edge)
                 geo.connect_to_grid(temp_edge)
 
@@ -218,11 +218,3 @@ def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.Hal
             #print(f"{new_edge} intersects with {edge}")
             return False
     return True
-
-def _edge_in_boundary(edge : geo.HalfEdge, boundary: geo.Face) -> bool:
-    """
-    Checks if an edge is inside the boundary through checking if the middle point would be inside the boundary.
-    """
-    middle = geo.Vertex(*((edge.twin.origin.position() + edge.origin.position())/2))
-
-    return boundary.is_point_in_face(middle)
