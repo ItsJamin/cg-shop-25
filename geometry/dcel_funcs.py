@@ -165,7 +165,7 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     return (min_edge, max_edge)
 
 
-def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
+def edges_intersect(edge1: HalfEdge, edge2: HalfEdge, on_edge_is_intersection = True) -> bool:
     """
     Determines if two edges (with twins) intersect.
     
@@ -178,6 +178,8 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
     Lines do not intersect when:
     - they have one common endpoint and do not overlap
     - they do not cross and have no common endpoint
+
+    on_edge_is_intersection: If True, edges that end in a point on the other edge (except endpoints) are counted.
     """
 
     def area(p1, p2, p3):
@@ -185,6 +187,11 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
         return 0.5 * ((p1[0] * (p2[1] - p3[1]) +
                        p2[0] * (p3[1] - p1[1]) +
                        p3[0] * (p1[1] - p2[1])))
+    
+    def on_segment(p1, p2, q):
+        """Checks if point q lies on the line segment p1-p2."""
+        return (min(p1[0], p2[0]) <= q[0] <= max(p1[0], p2[0]) and
+                min(p1[1], p2[1]) <= q[1] <= max(p1[1], p2[1]))
 
     common_endpoints = count_same_endpoints(edge1, edge2)
 
@@ -200,27 +207,16 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
 
         # Find the two edges that need to be looked at from the common point
         angle_edges = []
-        debug = False
         if np.array_equal(p1, p3):
-            if (np.array_equal(p1, [820107,0])):
-                debug = True
             angle_edges = [edge1, edge2]
         elif np.array_equal(p2, p3):
-            if (np.array_equal(p2, [820107,0])):
-                debug = True
             angle_edges = [edge1.twin, edge2]
         elif np.array_equal(p1, p4):
             angle_edges = [edge1, edge2.twin]
-            if (np.array_equal(p1, [820107,0])):
-                debug = True
         else: # has to be p2, p4
             angle_edges = [edge1.twin, edge2.twin]
-            if (np.array_equal(p4, [820107,0])):
-                debug = True
-
+        
         angle = angle_between_edges(*angle_edges)
-        if debug:
-            print(edge1, edge2, "Angle", angle)
         #print(f"||| Have ome point in common and angle is, ", angle)
         if angle == 0:
             return True
@@ -235,19 +231,6 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
         p3 = edge2.origin.position()
         p4 = edge2.twin.origin.position()
 
-        debug = False
-        if (np.array_equal(p1, [820107,0])):
-            debug = True
-        if (np.array_equal(p2, [820107,0])):
-            debug = True
-        if (np.array_equal(p3, [820107,0])):
-            debug = True
-        if (np.array_equal(p4, [820107,0])):
-            debug = True
-
-        if debug:
-            pass#print("No commons:",edge1, edge2)
-
         # Calculate areas
         a1 = area(p1, p2, p3)
         a2 = area(p1, p2, p4)
@@ -255,18 +238,25 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge) -> bool:
         a4 = area(p3, p4, p2)
 
         # Check if areas have opposite signs
-        if a1 * a2 <= 0 and a3 * a4 <= 0:
+        if a1 * a2 < 0 and a3 * a4 < 0:
             return True
         
-        #print("|||Have no points and common and do not intersect")
+        # Check if really on a line
+        is_collinear = False
+        if (a1 * a2 == 0 and a3 * a4 == 0):
+            is_collinear = True
 
         # Check for collinear overlap
-        #if np.isclose(a1, 0) or np.isclose(a2, 0) or np.isclose(a3, 0) or np.isclose(a4, 0):
-        #    # TODO: Check if collinear segments overlap
-        #    pass
+        if np.isclose(a1, 0) and on_segment(p1, p2, p3):
+            return is_collinear or on_edge_is_intersection
+        if np.isclose(a2, 0) and on_segment(p1, p2, p4):
+            return is_collinear or on_edge_is_intersection
+        if np.isclose(a3, 0) and on_segment(p3, p4, p1):
+            return is_collinear or on_edge_is_intersection
+        if np.isclose(a4, 0) and on_segment(p3, p4, p2):
+            return is_collinear or on_edge_is_intersection
 
     return False
-
 
 def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
     """
