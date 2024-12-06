@@ -298,7 +298,7 @@ def angle_between_edges(edge1: HalfEdge, edge2: HalfEdge) -> float:
 
     return angle
 
-def is_edge_in_boundary(edge : HalfEdge, face : Face):
+def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool = True):
     """
     Checks if an edge is inside the face through a checking angle to edge_faces.
     Assumptions: 
@@ -333,7 +333,9 @@ def is_edge_in_boundary(edge : HalfEdge, face : Face):
         previous_edge = face.edges[index-1].twin
         current_angle = angle_between_edges(previous_edge, boundary_edge)
 
-        if angle_between_edges(previous_edge, edge_to_add) >= current_angle:
+        if angle_between_edges(previous_edge, edge_to_add) >= current_angle and counter_clockwise:
+            return True
+        elif angle_between_edges(previous_edge, edge_to_add) <= current_angle and not counter_clockwise:
             return True
         else:
             return False
