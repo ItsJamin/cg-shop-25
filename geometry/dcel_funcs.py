@@ -65,6 +65,26 @@ def is_non_obtuse_triangle(face : Face) -> bool:
         return all(angle <= 90 for angle in angles)
     return False
 
+def get_obtuse_vertex(face : Face) -> Vertex:
+    edge = face.edge
+    if is_valid_triangle(edge): 
+        e1 = edge
+        e2 = edge.next
+        e3 = edge.next.next
+
+        angle1 = angle_between_edges(e1.twin, e2)
+        angle2 = angle_between_edges(e2.twin, e3)
+        angle3 = angle_between_edges(e3.twin, e1)
+
+        if angle1 > 90:
+            return e2.origin
+        
+        if angle2 > 90:
+            return e3.origin
+        
+        if angle3 > 90:
+            return e1.origin
+
 def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
     """
     Connects a given HalfEdge to a grid by finding the closest and farthest edges from its origin and twin's origin.
