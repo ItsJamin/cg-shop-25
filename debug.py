@@ -16,7 +16,7 @@ if __name__ == '__main__':
     problem = inp.load_problem("cgshop2025_examples_point-set_10_b4ff36df.instance.json") #steiner point recursion infinite problem
     
 
-    solution = alg.greedy_top_down(problem)
+    solution = alg.non_obtuse_triangulation(problem)
     
     # visualize the problem and animate the solution steps. 
     vis.animate_algorithm(problem, solution, interval=500, show_faces=True)

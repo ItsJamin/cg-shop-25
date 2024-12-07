@@ -1,1 +1,1 @@
-from .greedy_top_down import *
+from .non_obtuse_triangulation import *

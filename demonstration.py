@@ -12,10 +12,10 @@ if __name__ == '__main__':
     #problem = inp.load_problem(inp.get_random_file_from_dir())
 
     # execute the greedy algorithm
-    solution = alg.greedy_top_down(problem)
+    solution = alg.non_obtuse_triangulation(problem)
     
     # visualize the problem and animate the solution steps. 
-    vis.animate_algorithm(problem, solution, interval=500, show_faces=True)
+    vis.animate_algorithm(problem, solution, interval=100, show_faces=True)
 
 
     # ----- Geometric Representation ----- #

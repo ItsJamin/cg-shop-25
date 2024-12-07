@@ -1,40 +1,9 @@
 from instance import Problem, Result
 import geometry as geo
 import numpy as np
+import visualization as vis
 
-def greedy_top_down(problem: Problem) -> Result:
-    """
-    Computes a top-down triangulation and fixes obtuse angles by placing Steiner points.
-    """
-    result = Result()
-
-    all_edges = problem.g_constraints + problem.g_region_boundary.edges
-    faces_to_look_at = []
-
-    # create sorted list of points from top to bottom
-    points = _sort_points_top_down(problem.g_points)
-
-    for index, point in enumerate(points):
-        # try to draw edges to each point above
-        for prev_point in points[:index]:
-            #print(f"looking from {point} to {prev_point}")
-            temp_edge = geo.HalfEdge(point, prev_point)          
-
-            if _no_edge_intersection(temp_edge, all_edges) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
-                all_edges.append(temp_edge)
-                geo.connect_to_grid(temp_edge)
-
-                result.step(temp_edge, color="orange")
-
-                for f in [temp_edge.face, temp_edge.twin.face]:
-                    if f:
-                        if geo.is_non_obtuse_triangle(f):
-                            result.step(f, color="#BCD8B7")
-                        else:
-                            # if obtuse triangle, save for later to look at
-                            faces_to_look_at.append(f)
-                            result.step(f, color="#ffc1cc")
-
+def steiner_points(faces_to_look_at, all_edges, problem, result):
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
     while len(faces_to_look_at) > 0:
@@ -47,25 +16,26 @@ def greedy_top_down(problem: Problem) -> Result:
             if len(face.vertices) == 4: #should be 4-polygon
                 new_faces = divide_trapezoid(face)
                 if len(new_faces) > 0:
-                    result.step(new_faces[0].edge, color="green")
+                    result.step(new_faces[0].edge, color=vis.CL_NORMAL)
                     for f in new_faces:
                         faces_to_look_at.append(f)
-                        result.step(f, color="#B2BCAA")
+                        result.step(f, color=vis.CF_CHECK)
                     faces_to_look_at.remove(face)
                 else:
                     print("WRONG FACE ", face)
-                    result.step(face, color="red")
+                    result.step(face, color=vis.CF_ERROR)
             elif len(face.vertices) == 3:
+
                 #TODO: try switching inner edge with other triangles
 
-                steiner_point, changed_edge = _calculate_steiner_point(face)
+                steiner_point, changed_edge = calculate_steiner_point(face)
                 if steiner_point:
                     geo.loose_edge(changed_edge)
                     #print("Adding Steiner point on edge: ", changed_edge)
                     problem.g_points.append(steiner_point) #TODO: save elsewhere (result, extra steiner pointsl ist)
-                    result.step(steiner_point, color="red")  # visualize the steiner point
-                    result.step(changed_edge, color="white")
-                    new_faces = _add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
+                    result.step(steiner_point, color=vis.CP_STEINER)  # visualize the steiner point
+                    result.step(changed_edge, color=vis.CL_REMOVE)
+                    new_faces = add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
                     
                     for f in new_faces:
                         faces_to_look_at.append(f)
@@ -75,15 +45,11 @@ def greedy_top_down(problem: Problem) -> Result:
                     if changed_edge.twin.face in faces_to_look_at:
                         faces_to_look_at.remove(changed_edge.twin.face)   
         else:
-            result.step(face, color="#BCD8B7")
-        
-                    
+            result.step(face, color=vis.CF_VALID)
 
     return result
 
-# Helper Functions 
-
-def _calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
+def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     """
     Berechnet einen Steiner-Punkt für ein Dreieck, indem ein rechter Winkel
     von der stumpfen Ecke zur gegenüberliegenden Kante hergestellt wird.
@@ -139,9 +105,7 @@ def _calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     return geo.Vertex(steiner_point_position[0], steiner_point_position[1]), changed_edge
 
 
-
-
-def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], changed_edge : geo.HalfEdge, result: Result) -> list[geo.Face]:
+def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], changed_edge : geo.HalfEdge, result: Result) -> list[geo.Face]:
     """
     Updates the triangulation to include a Steiner point by splitting the obtuse triangle into smaller triangles.
     """
@@ -155,7 +119,7 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
         geo.connect_to_grid(new_edge)
         all_edges.append(new_edge)
         new_edges.append(new_edge)
-        result.step(new_edge, color="green")  # Visualize the new edge
+        result.step(new_edge, color=vis.CL_NORMAL)  # Visualize the new edge
 
     # Create new faces for the triangulation
     return_faces = []
@@ -164,26 +128,13 @@ def _add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Fac
         #print(edge, edge.next, edge.next.next)
         new_face = geo.Face(edge, reference_from_below=True)
         if new_face.is_clockwise():
-            result.step(new_face, color="#ADADFF")
+            result.step(new_face, color=vis.CF_CHECK)
             if len(new_face.vertices) > 3: # the trapezoide should be handled first
                 return_faces.insert(0, new_face)
             return_faces.append(new_face)
 
     #TODO: Gib die Faces um den neuen Steiner Punkt Zurück 
     return return_faces
-
-def _sort_points_top_down(liste : list[geo.Vertex]) -> list[geo.Vertex]:
-    """
-    Sort list of points from top to bottom (y-axis)
-    """
-
-    n = len(liste)
-    for i in range(n):
-        for j in range(i + 1, n):
-            if liste[i].y < liste[j].y:
-                liste[i], liste[j] = liste[j], liste[i]
-    return liste
-
 
 def divide_trapezoid(face : geo.Face) -> list[geo.Face]:
     """Divides a trapezoid into two triangles"""
@@ -206,14 +157,3 @@ def divide_trapezoid(face : geo.Face) -> list[geo.Face]:
             break
     
     return faces
-    
-
-def _no_edge_intersection(new_edge : geo.HalfEdge, existing_edges : list[geo.HalfEdge]) -> bool:
-    """
-    Checks if an edge intersect with a given array of existing edges
-    """
-    for edge in existing_edges:
-        if geo.edges_intersect(new_edge, edge):
-            #print(f"{new_edge} intersects with {edge}")
-            return False
-    return True

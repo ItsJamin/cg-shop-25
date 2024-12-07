@@ -258,6 +258,16 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge, on_edge_is_intersection = 
 
     return False
 
+def no_edge_intersection(new_edge : HalfEdge, existing_edges : list[HalfEdge]) -> bool:
+    """
+    Checks if an edge intersect with a given array of existing edges
+    """
+    for edge in existing_edges:
+        if edges_intersect(new_edge, edge):
+            #print(f"{new_edge} intersects with {edge}")
+            return False
+    return True
+
 def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
     """
     Counts how many endpoints two edges share using sets.
