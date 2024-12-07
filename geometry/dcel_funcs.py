@@ -65,7 +65,7 @@ def is_non_obtuse_triangle(face : Face) -> bool:
         return all(angle <= 90 for angle in angles)
     return False
 
-def get_obtuse_vertex(face : Face) -> Vertex:
+def get_obtuse_edge(face : Face) -> HalfEdge:
     edge = face.edge
     if is_valid_triangle(edge): 
         e1 = edge
@@ -77,13 +77,13 @@ def get_obtuse_vertex(face : Face) -> Vertex:
         angle3 = angle_between_edges(e3.twin, e1)
 
         if angle1 > 90:
-            return e2.origin
+            return e2
         
         if angle2 > 90:
-            return e3.origin
+            return e3
         
         if angle3 > 90:
-            return e1.origin
+            return e1
 
 def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
     """

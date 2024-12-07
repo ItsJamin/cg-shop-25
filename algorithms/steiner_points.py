@@ -26,7 +26,9 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                     result.step(face, color=vis.CF_ERROR)
             elif len(face.vertices) == 3:
 
-                #TODO: try switching inner edge with other triangles
+                _swap_edges(face)
+                faces_to_look_at.append(face)
+                result.step(face, color=vis.CF_CHECK)
 
                 steiner_point, changed_edge = calculate_steiner_point(face)
                 if steiner_point:
@@ -48,6 +50,8 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
             result.step(face, color=vis.CF_VALID)
 
     return result
+
+#Helper functions:
 
 def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     """
@@ -157,3 +161,43 @@ def divide_trapezoid(face : geo.Face) -> list[geo.Face]:
             break
     
     return faces
+
+def _swap_edges(face: geo.Face,) -> list[geo.Face]:
+
+
+    #finde Stumpfen Winkel in Face
+
+    obtuse_edge = geo.get_obtuse_edge(face)
+
+
+    #Falls Kante in CCW geht -> Boundary Kante und ignoriere
+
+    opposite_face = obtuse_edge.twin.face
+
+    if opposite_face is None or opposite_face.is_clockwise():
+    
+        return []
+
+
+    #Finde Gegenüberliegende Face und die Kante
+
+    opposite_edge = obtuse_edge.next.next.twin.next.next
+
+
+    #Löse existierende Kante
+
+    geo.loose_edge(obtuse_edge.next.next)
+
+    geo.connect_to_grid(obtuse_edge)
+
+    geo.connect_to_grid(obtuse_edge.prev.prev)
+
+
+    #Füge Kante vom Stumpfen winkel zu gegenüberliegenden Kante
+    
+    
+    new_edge = geo.HalfEdge(obtuse_edge.origin, opposite_edge.origin)
+
+    face1 , face2 = geo.connect_to_grid(new_edge)
+
+    return [face1,face2]
