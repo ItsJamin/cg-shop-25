@@ -33,6 +33,7 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                 if len(new_faces) > 0:
                     if opposite_face in faces_to_look_at:
                         faces_to_look_at.remove(opposite_face)
+                    result.step(new_faces[0].edge, color=vis.CL_NORMAL)
                     for f in new_faces:
                         if f:
                             faces_to_look_at.append(f)
@@ -177,12 +178,11 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     """
     Tries swapping edges of two triangles. If both angles are obtuse, do the edge_swap.
 
-    Gives back old opposite_face and the new_faces.
+    Gives back old opposite_face, removed_edge and the new_faces.
     """
 
     # find obtuse angle in face
     obtuse_edge = geo.get_obtuse_edge(face)
-    print("Obtuse Edge: ", obtuse_edge)
 
     if not obtuse_edge:
         return None, []
@@ -190,8 +190,6 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     # get other side
     opposite_face = obtuse_edge.next.twin.face
     opposite_obtuse_edge = obtuse_edge.next.twin.next.next
-    print("Opposite Face", opposite_face)
-    print("Opposite Obtuse Edge", opposite_obtuse_edge)
 
     # check if other side is also obtuse
     if not opposite_face or not opposite_face.is_clockwise():
@@ -231,11 +229,5 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     new_edge = geo.HalfEdge(obtuse_edge.origin, opposite_obtuse_edge.origin)
 
     face1, face2 = geo.connect_to_grid(new_edge)
-
-    current = new_edge
-    for i in range(4):
-        print("..", current)
-        current = current.next
-    
 
     return opposite_face, [face1,face2]

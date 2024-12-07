@@ -19,7 +19,7 @@ if __name__ == '__main__':
     solution = alg.non_obtuse_triangulation(problem)
     
     # visualize the problem and animate the solution steps. 
-    vis.animate_algorithm(problem, solution, interval=500, show_faces=True)
+    vis.animate_algorithm(problem, solution, interval=100, show_faces=True)
 
     p1 = geo.Vertex(2,0)
     p2 = geo.Vertex(2,5)

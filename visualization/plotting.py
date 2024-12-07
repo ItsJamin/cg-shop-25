@@ -1,6 +1,7 @@
 from instance import Problem, Result
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon
 
 def plot_problem(instance: Problem):
@@ -36,7 +37,8 @@ def plot_problem(instance: Problem):
 
     return fig, ax
 
-def animate_algorithm(instance: Problem, solution: Result, interval : int = 400, show_faces : bool = True):
+
+def animate_algorithm(instance: Problem, solution: Result, interval: int = 400, show_faces: bool = True):
     """
     Animate the algorithm steps in result.
 
@@ -47,16 +49,24 @@ def animate_algorithm(instance: Problem, solution: Result, interval : int = 400,
     # Nehme das visualisierte Problem als Vorlage
     fig, ax = plot_problem(instance)
 
+
     def update(data):
-        # Schrittweise Vertices oder Linien zeichnen
+
         points, color = data[0], data[1]
+
+        # Punkt zeichnen
         if len(points) == 2:
-            ax.scatter(points[0], points[1], color = color)
+            point = ax.scatter(points[0], points[1], color=color, zorder=5)
+
+        # Linie zeichnen
         elif len(points) == 4:
-            ax.plot([points[0], points[2]], [points[1], points[3]], color=color, linestyle="-")
+            line = Line2D([points[0], points[2]], [points[1], points[3]], color=color)
+            ax.add_line(line)
+
+        # Polygon zeichnen
         elif len(points) > 4:
-            polygon_points = [(points[i], points[i+1]) for i in range(0, len(points), 2)]
-            polygon = Polygon(polygon_points, closed=True, fill=True, facecolor=color)
+            polygon_points = [(points[i], points[i + 1]) for i in range(0, len(points), 2)]
+            polygon = Polygon(polygon_points, closed=True, fill=True, facecolor=color, edgecolor="black", alpha=1, zorder=2)
             ax.add_patch(polygon)
 
     elems_to_animate = solution.v_elements
@@ -66,5 +76,5 @@ def animate_algorithm(instance: Problem, solution: Result, interval : int = 400,
         elems_to_animate = [elem for elem in elems_to_animate if len(elem[0]) <= 4]
 
     # Animation erstellen
-    ani = FuncAnimation(fig, update, frames=elems_to_animate, repeat=False, interval = interval)
+    ani = FuncAnimation(fig, update, frames=elems_to_animate, repeat=False, interval=interval)
     plt.show()
