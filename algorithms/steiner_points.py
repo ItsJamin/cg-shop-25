@@ -26,10 +26,21 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                     result.step(face, color=vis.CF_ERROR)
             elif len(face.vertices) == 3:
 
-                _swap_edges(face)
-                faces_to_look_at.append(face)
-                result.step(face, color=vis.CF_CHECK)
+                # Check if edge change would make sense (both obtuse)
+                # Change Edge
+                # Remove old faces and add new faces
+                opposite_face, new_faces = _swap_edges(face)
+                if len(new_faces) > 0:
+                    if opposite_face in faces_to_look_at:
+                        faces_to_look_at.remove(opposite_face)
+                    for f in new_faces:
+                        if f:
+                            faces_to_look_at.append(f)
+                            result.step(f, color=vis.CF_CHECK)
+                    continue
 
+                # if not edge_change do steiner_point
+                print("THIS FACE IS AS FOLLOWS:", face, face.edges)
                 steiner_point, changed_edge = calculate_steiner_point(face)
                 if steiner_point:
                     geo.loose_edge(changed_edge)
@@ -162,42 +173,69 @@ def divide_trapezoid(face : geo.Face) -> list[geo.Face]:
     
     return faces
 
-def _swap_edges(face: geo.Face,) -> list[geo.Face]:
+def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
+    """
+    Tries swapping edges of two triangles. If both angles are obtuse, do the edge_swap.
 
+    Gives back old opposite_face and the new_faces.
+    """
 
-    #finde Stumpfen Winkel in Face
-
+    # find obtuse angle in face
     obtuse_edge = geo.get_obtuse_edge(face)
+    print("Obtuse Edge: ", obtuse_edge)
+
+    if not obtuse_edge:
+        return None, []
+
+    # get other side
+    opposite_face = obtuse_edge.next.twin.face
+    opposite_obtuse_edge = obtuse_edge.next.twin.next.next
+    print("Opposite Face", opposite_face)
+    print("Opposite Obtuse Edge", opposite_obtuse_edge)
+
+    # check if other side is also obtuse
+    if not opposite_face or not opposite_face.is_clockwise():
+        return opposite_face, []
+    if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90:
+        return opposite_face, [] 
 
 
-    #Falls Kante in CCW geht -> Boundary Kante und ignoriere
+    #remove old edge
+    edge_to_remove = obtuse_edge.next
+    geo.loose_edge(edge_to_remove)
 
-    opposite_face = obtuse_edge.twin.face
+    # connect edges correctly
+    edge_to_remove.prev.next = edge_to_remove.twin.next
+    edge_to_remove.next.prev = edge_to_remove.twin.prev
 
-    if opposite_face is None or opposite_face.is_clockwise():
+    edge_to_remove.twin.prev.next = edge_to_remove.next
+    edge_to_remove.twin.next.prev = edge_to_remove.prev
+
+    current = obtuse_edge
+
+    for _ in range(4):
+        print("--",current)
+        current = current.prev
     
-        return []
+    if current != obtuse_edge:
+        raise Exception("EDGE")
+    else:
+        print("x", current)
 
 
-    #Finde Gegenüberliegende Face und die Kante
-
-    opposite_edge = obtuse_edge.next.next.twin.next.next
-
-
-    #Löse existierende Kante
-
-    geo.loose_edge(obtuse_edge.next.next)
-
-    geo.connect_to_grid(obtuse_edge)
-
-    geo.connect_to_grid(obtuse_edge.prev.prev)
+    #geo.connect_to_grid(obtuse_edge)
+    #geo.connect_to_grid(obtuse_edge.prev)
 
 
-    #Füge Kante vom Stumpfen winkel zu gegenüberliegenden Kante
+    # adds edge    
+    new_edge = geo.HalfEdge(obtuse_edge.origin, opposite_obtuse_edge.origin)
+
+    face1, face2 = geo.connect_to_grid(new_edge)
+
+    current = new_edge
+    for i in range(4):
+        print("..", current)
+        current = current.next
     
-    
-    new_edge = geo.HalfEdge(obtuse_edge.origin, opposite_edge.origin)
 
-    face1 , face2 = geo.connect_to_grid(new_edge)
-
-    return [face1,face2]
+    return opposite_face, [face1,face2]

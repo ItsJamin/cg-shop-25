@@ -66,6 +66,9 @@ def is_non_obtuse_triangle(face : Face) -> bool:
     return False
 
 def get_obtuse_edge(face : Face) -> HalfEdge:
+    """
+    Returns edge starting from point with obtuse angle (clockwise).
+    """
     edge = face.edge
     if is_valid_triangle(edge): 
         e1 = edge
