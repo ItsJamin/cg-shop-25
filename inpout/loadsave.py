@@ -1,6 +1,7 @@
 import json
 
 from instance import Problem
+from instance import Result
 
 def load_problem(filename : str) -> Problem:
     """Create instance of the problem."""

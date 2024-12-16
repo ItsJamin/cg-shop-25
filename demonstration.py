@@ -8,19 +8,22 @@ if __name__ == '__main__':
     # ----- Main Logic ----- #
 
     # create problem from json file
-    problem = inp.load_problem("cgshop2025_examples_simple-polygon-exterior-20_10_a557fecb.instance.json")
+    problem = inp.load_problem("test.json")
     #problem = inp.load_problem(inp.get_random_file_from_dir())
 
     # execute the greedy algorithm
     solution = alg.non_obtuse_triangulation(problem)
 
-    # visualize the problem.
+    # save the solution
+    #inp.save_result(solution, "test_solution")
+
+    # visualize the problem
     vis.show_problem(problem)
 
-    # visualize the solution.
+    # visualize the solution
     vis.show_result(problem, solution, show_faces=True)
     
-    # visualize the problem and animate the solution steps. 
+    # visualize the problem and animate the solution steps
     vis.animate_algorithm(problem, solution, interval=0, show_faces=True)
 
     # ----- Geometric Representation ----- #
