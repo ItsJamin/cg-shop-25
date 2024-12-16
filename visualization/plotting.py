@@ -78,3 +78,51 @@ def animate_algorithm(instance: Problem, solution: Result, interval: int = 400, 
     # Animation erstellen
     ani = FuncAnimation(fig, update, frames=elems_to_animate, repeat=False, interval=interval)
     plt.show()
+
+
+def show_result(instance: Problem, solution: Result, show_faces: bool = True):
+    """
+    Visualize the algorithm result all at once.
+
+    show_faces: whether to show faces (default) in the visualization or not
+    """
+
+    # Nehme das visualisierte Problem als Vorlage
+    fig, ax = plot_problem(instance)
+
+    elems_to_draw = solution.v_elements
+
+    # Zeige Faces nur wenn gewollt
+    if not show_faces:
+        elems_to_draw = [elem for elem in elems_to_draw if len(elem[0]) <= 4]
+
+    for data in elems_to_draw:
+        points, color = data[0], data[1]
+
+        # Punkt zeichnen
+        if len(points) == 2:
+            ax.scatter(points[0], points[1], color=color, zorder=5)
+
+        # Linie zeichnen
+        elif len(points) == 4:
+            line = Line2D([points[0], points[2]], [points[1], points[3]], color=color)
+            ax.add_line(line)
+
+        # Polygon zeichnen
+        elif len(points) > 4:
+            polygon_points = [(points[i], points[i + 1]) for i in range(0, len(points), 2)]
+            polygon = Polygon(polygon_points, closed=True, fill=True, facecolor=color, edgecolor="black", alpha=1, zorder=2)
+            ax.add_patch(polygon)
+
+    # Zeige die finale Darstellung
+    plt.show()
+
+
+def show_problem(instance: Problem):
+    """
+    Visualize only the problem without any solution elements.
+    """
+
+    # Visualisiere nur das Problem
+    fig, ax = plot_problem(instance)
+    plt.show()

@@ -29,7 +29,7 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                 # Check if edge change would make sense (both obtuse)
                 # Change Edge
                 # Remove old faces and add new faces
-                opposite_face, new_faces = _swap_edges(face)
+                """opposite_face, new_faces = _swap_edges(face)
                 if len(new_faces) > 0:
                     if opposite_face in faces_to_look_at:
                         faces_to_look_at.remove(opposite_face)
@@ -38,7 +38,7 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                         if f:
                             faces_to_look_at.append(f)
                             result.step(f, color=vis.CF_CHECK)
-                    continue
+                    continue"""
 
                 # if not edge_change do steiner_point
                 print("THIS FACE IS AS FOLLOWS:", face, face.edges)

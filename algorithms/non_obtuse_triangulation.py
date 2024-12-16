@@ -10,9 +10,12 @@ def non_obtuse_triangulation(problem: Problem) -> Result:
     """
     result = Result()
 
+    #Grid-Triangulation
+    
     #Greedy-Triangulation
     faces_to_look_at, all_edges, result = triangulation_greedy(problem, result)
 
+    #Steiner Points
     result = steiner_points(faces_to_look_at, all_edges, problem, result)
 
     return result
