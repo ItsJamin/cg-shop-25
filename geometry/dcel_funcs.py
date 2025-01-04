@@ -373,5 +373,44 @@ def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool =
         else:
             return False
         
+def is_vertex_in_boundary(vertex: Vertex, face: Face) -> bool:
+    """
+    Checks if a given vertex is within the boundary of a face.
 
-        
+    Parameters:
+        vertex (Vertex): The vertex to check.
+        face (Face): The face whose boundary is tested.
+
+    Returns:
+        bool: True if the vertex is inside the face boundary, False otherwise.
+    """
+    # Convert the vertex position to a numpy array
+    point = vertex.position()
+
+    # Retrieve the vertices of the face in cyclic order
+    vertices = face._get_vertices()
+
+    # Use the Ray-Casting algorithm to check if the point is inside the polygon
+    n = len(vertices)
+    inside = False
+
+    x, y = point
+
+    # Loop through the edges of the face
+    for i in range(n):
+        v1 = vertices[i].position()
+        v2 = vertices[(i + 1) % n].position()
+
+        x1, y1 = v1
+        x2, y2 = v2
+
+        # Check if the edge crosses the horizontal ray at y
+        if (y1 > y) != (y2 > y):
+            # Compute the intersection point of the edge with the ray
+            intersection_x = x1 + (x2 - x1) * (y - y1) / (y2 - y1)
+
+            # Check if the point is to the left of the edge (intersection_x > x)
+            if x < intersection_x:
+                inside = not inside
+
+    return inside
