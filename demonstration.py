@@ -8,8 +8,8 @@ if __name__ == '__main__':
     # ----- Main Logic ----- #
 
     # create problem from json file
-    problem = inp.load_problem("test.json")
-    #problem = inp.load_problem("cgshop2025_examples_simple-polygon_10_81177380.instance.json")
+    #problem = inp.load_problem("test.json")
+    problem = inp.load_problem("cgshop2025_examples_simple-polygon_10_81177380.instance.json")
     #problem = inp.load_problem("cgshop2025_examples_point-set_100_5da0b4c3.instance.json")
     #problem = inp.load_problem(inp.get_random_file_from_dir())
 
