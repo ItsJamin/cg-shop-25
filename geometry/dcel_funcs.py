@@ -414,3 +414,40 @@ def is_vertex_in_boundary(vertex: Vertex, face: Face) -> bool:
                 inside = not inside
 
     return inside
+
+def split_edge_on_point(edge : HalfEdge, split_point : Vertex):
+    """
+    Precondition: Point is on edge
+
+    Returns two edges, already connected to previous pointers.
+    """
+
+    a = edge.origin
+    b = edge.twin.origin
+
+    ab_prev = edge.prev
+    ab_next = edge.next
+    ba_prev = edge.twin.prev
+    ba_next = edge.twin.next
+    
+    first_edge = HalfEdge(a,split_point)
+    second_edge = HalfEdge(split_point,b)
+
+    first_edge.next = second_edge
+    second_edge.prev = first_edge
+
+    first_edge.prev = ab_prev
+    if ab_prev:
+        ab_prev.next = first_edge
+    first_edge.twin.next = ba_next
+    if ba_next:
+        ba_next.prev = first_edge.twin
+
+    second_edge.next = ab_next
+    if ab_next:
+        ab_next.prev = second_edge
+    second_edge.twin.prev = ba_prev
+    if ba_prev:
+        ba_prev.next = second_edge.twin
+
+    return [first_edge, second_edge]
