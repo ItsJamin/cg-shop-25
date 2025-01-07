@@ -438,6 +438,8 @@ def split_edge_on_point(edge : HalfEdge, split_point : Vertex):
 
     first_edge.next = second_edge
     second_edge.prev = first_edge
+    first_edge.twin.prev = second_edge
+    second_edge.twin.next = first_edge
 
     first_edge.prev = ab_prev
     if ab_prev:

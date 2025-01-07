@@ -10,35 +10,60 @@ import visualization as vis
 
 def triangulation_grid(problem, result):
     all_vertices = problem.g_points
-    boundary_edge = problem.g_region_boundary.edges
+    boundary_edges = problem.g_region_boundary.edges
     points_on_boundary = list({edge.origin for edge in problem.g_region_boundary.edges})
 
-    print("begin", boundary_edge)
-    print("POINTS ON BOUNDARY",len(points_on_boundary), points_on_boundary)
-
     #TODO: edge in 2 aufteilen bei erstellen von pkt
+    all_vertices = sort_points_left_right_bottom_top(all_vertices)
     new_points = []
-    for edge in boundary_edge:
+    for edge in boundary_edges:
         #TODO: edge angucken was aufgeteiltt wurde -> sortiere liste zuerst, damit man immer nur die eine neu erstellte edge angucken muss
         for vertex in all_vertices:
             if vertex_hitting_boundary_x(vertex, edge):
                 new_point_x = get_vertex_on_boundary_x(vertex, edge)
+
+                if not geo.is_edge_in_boundary(geo.HalfEdge(vertex,new_point_x), problem.g_region_boundary):
+                    continue
+
+                new_edge1, new_edge2 = geo.split_edge_on_point(edge, new_point_x)
+                if edge in boundary_edges:
+                    boundary_edges.remove(edge)
+                boundary_edges.append(new_edge1)
+                boundary_edges.append(new_edge2)
+                if new_edge1.origin.x > new_edge2.origin.x:
+                    edge = new_edge1
+                else:
+                    edge = new_edge2
                 temp_edge = geo.HalfEdge(vertex, new_point_x)
-                temp_boundary_edge = boundary_edge.copy().remove(edge)
-                if geo.no_edge_intersection(temp_edge, temp_boundary_edge) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
+
+                if geo.no_edge_intersection(temp_edge, boundary_edges) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
+                
                     result.step(temp_edge, color=vis.CL_NORMAL)
                 if vertex_not_existing(all_vertices, new_point_x) and vertex_not_existing(new_points, new_point_x):
                     new_points = new_points + [new_point_x]
                     points_on_boundary.append(new_point_x)
                     result.step(new_point_x, color=vis.CP_STEINER)
 
-    for edge in boundary_edge:
+    for edge in boundary_edges:
         for vertex in all_vertices:
             if vertex_hitting_boundary_y(vertex, edge):
                 new_point_y = get_vertex_on_boundary_y(vertex, edge)
+
+                if not geo.is_edge_in_boundary(geo.HalfEdge(vertex,new_point_y), problem.g_region_boundary):
+                    continue
+
+                new_edge1, new_edge2 = geo.split_edge_on_point(edge, new_point_y)
+                if edge in boundary_edges:
+                    boundary_edges.remove(edge)
+                boundary_edges.append(new_edge1)
+                boundary_edges.append(new_edge2)
+                if new_edge1.origin.y > new_edge2.origin.y:
+                    edge = new_edge1
+                else:
+                    edge = new_edge2
                 temp_edge = geo.HalfEdge(vertex, new_point_y)
-                temp_boundary_edge = boundary_edge.copy().remove(edge)
-                if geo.no_edge_intersection(temp_edge, temp_boundary_edge) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
+                if geo.no_edge_intersection(temp_edge, boundary_edges):
+            
                     result.step(temp_edge, color=vis.CL_NORMAL)
                 if vertex_not_existing(all_vertices, new_point_y) and vertex_not_existing(new_points, new_point_y):
                     new_points = new_points + [new_point_y]
@@ -51,10 +76,8 @@ def triangulation_grid(problem, result):
 
 
     #points in boundary
-    print("added", all_vertices)
-    print("POINTS ON BOUNDARY",len(points_on_boundary), points_on_boundary)
+    print("END")
     all_vertices = sort_points_left_right_bottom_top(all_vertices)
-    print("sorted", all_vertices)
     
     temp_vertex = all_vertices.copy()
 
