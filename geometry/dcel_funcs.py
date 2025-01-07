@@ -339,6 +339,9 @@ def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool =
     - Face is counter clockwise orientated
     """
 
+    face.vertices = face._get_vertices()
+    face.edges = face._get_edges()
+    
     points_on_edge = 0
     if edge.origin in face.vertices:
         points_on_edge += 1
