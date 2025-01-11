@@ -9,7 +9,7 @@ def non_obtuse_triangulation(problem: Problem) -> Result:
     """
     Computes a top-down triangulation and fixes obtuse angles by placing Steiner points.
     """
-    result = Result()
+    result = Result(problem=problem)
 
     #Grid-Triangulation
     #result = triangulation_grid(problem,result) (Lost Technology)

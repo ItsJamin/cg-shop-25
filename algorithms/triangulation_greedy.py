@@ -18,6 +18,7 @@ def triangulation_greedy(problem, result):
             temp_edge = geo.HalfEdge(point, prev_point)          
 
             if geo.no_edge_intersection(temp_edge, all_edges) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
+                result.g_edges.append(temp_edge)
                 all_edges.append(temp_edge)
                 geo.connect_to_grid(temp_edge)
 

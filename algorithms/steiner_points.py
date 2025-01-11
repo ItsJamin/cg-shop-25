@@ -16,6 +16,7 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
             if len(face.vertices) == 4: #should be 4-polygon
                 new_faces = divide_trapezoid(face)
                 if len(new_faces) > 0:
+                    result.g_edges.append(new_faces[0].edge)
                     result.step(new_faces[0].edge, color=vis.CL_NORMAL)
                     for f in new_faces:
                         faces_to_look_at.append(f)
@@ -45,8 +46,9 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                 steiner_point, changed_edge = calculate_steiner_point(face)
                 if steiner_point:
                     geo.loose_edge(changed_edge)
-                    #print("Adding Steiner point on edge: ", changed_edge)
-                    problem.g_points.append(steiner_point) #TODO: save elsewhere (result, extra steiner pointsl ist)
+                    if changed_edge in result.g_edges:
+                        result.g_edges.remove(changed_edge)
+                    result.g_steiner_points.append(steiner_point)
                     result.step(steiner_point, color=vis.CP_STEINER)  # visualize the steiner point
                     result.step(changed_edge, color=vis.CL_REMOVE)
                     new_faces = add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
@@ -135,6 +137,7 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
         geo.connect_to_grid(new_edge)
         all_edges.append(new_edge)
         new_edges.append(new_edge)
+        result.g_edges.append(new_edge)
         result.step(new_edge, color=vis.CL_NORMAL)  # Visualize the new edge
 
     # Create new faces for the triangulation

@@ -1,8 +1,9 @@
-from instance import Problem, Result
+from instance import Problem, Result, convert_fraction_to_number
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon
+from .colors import *
 
 def plot_problem(instance: Problem):
     
@@ -126,3 +127,35 @@ def show_problem(instance: Problem):
     # Visualisiere nur das Problem
     fig, ax = plot_problem(instance)
     plt.show()
+
+def show_results_by_final_data(result: Result):
+    """
+    Visualizes only the converted data of result
+    """
+
+    fig, ax = plt.subplots()
+
+    points_x = result.points_x.copy()
+    points_y = result.points_y.copy()
+    
+    ax.scatter(points_x, points_y, color="black")
+
+    steiner_points_x = [convert_fraction_to_number(x) for x in result.steiner_points_x]
+    steiner_points_y = [convert_fraction_to_number(y) for y in result.steiner_points_y]
+    
+    ax.scatter(steiner_points_x, steiner_points_y, color=CP_STEINER)
+
+    points_x += steiner_points_x
+    points_y += steiner_points_y
+
+    for edge in result.edges:
+        x1, y1 = points_x[edge[0]], points_y[edge[0]]
+        x2, y2 = points_x[edge[1]], points_y[edge[1]]
+        ax.plot([x1, x2], [y1, y2], color=CL_NORMAL, linestyle="-")
+    
+    ax.set_aspect("equal")
+    #ax.set_title("Solution ", result.problem.instance_uid)
+
+    plt.show()
+
+
