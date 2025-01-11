@@ -1,0 +1,1 @@
+{"instance_uid":"simple-polygon-exterior-20_10_c6728228","num_points":10,"points_x":[1337,1725,2008,2997,2567,2687,0,1144,1468,1675],"points_y":[1767,1782,1562,1515,1036,0,225,938,964,1436],"region_boundary":[6,5,3,1,0],"num_constraints":7,"additional_constraints":[[1,2],[2,3],[3,4],[4,5],[6,7],[8,9],[9,0]]}
