@@ -6,63 +6,68 @@ import visualization as vis
 def steiner_points(faces_to_look_at, all_edges, problem, result):
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
-    while len(faces_to_look_at) > 0:
+    try:
+        while len(faces_to_look_at) > 0:
 
-        face = faces_to_look_at.pop()
-        #print("Next Face: ", face)
+            face = faces_to_look_at.pop()
+            #print("Next Face: ", face)
 
-        if not geo.is_non_obtuse_triangle(face):
+            if not geo.is_non_obtuse_triangle(face):
 
-            if len(face.vertices) == 4: #should be 4-polygon
-                new_faces = divide_trapezoid(face)
-                if len(new_faces) > 0:
-                    result.g_edges.append(new_faces[0].edge)
-                    result.step(new_faces[0].edge, color=vis.CL_NORMAL)
-                    for f in new_faces:
-                        faces_to_look_at.append(f)
-                        result.step(f, color=vis.CF_CHECK)
-                    faces_to_look_at.remove(face)
-                else:
-                    print("WRONG FACE ", face)
-                    result.step(face, color=vis.CF_ERROR)
-            elif len(face.vertices) == 3:
-
-                # Check if edge change would make sense (both obtuse)
-                # Change Edge
-                # Remove old faces and add new faces
-                """opposite_face, new_faces = _swap_edges(face)
-                if len(new_faces) > 0:
-                    if opposite_face in faces_to_look_at:
-                        faces_to_look_at.remove(opposite_face)
-                    result.step(new_faces[0].edge, color=vis.CL_NORMAL)
-                    for f in new_faces:
-                        if f:
+                if len(face.vertices) == 4: #should be 4-polygon
+                    new_faces = divide_trapezoid(face)
+                    if len(new_faces) > 0:
+                        result.g_edges.append(new_faces[0].edge)
+                        result.step(new_faces[0].edge, color=vis.CL_NORMAL)
+                        for f in new_faces:
                             faces_to_look_at.append(f)
                             result.step(f, color=vis.CF_CHECK)
-                    continue"""
+                        faces_to_look_at.remove(face)
+                    else:
+                        print("WRONG FACE ", face)
+                        result.step(face, color=vis.CF_ERROR)
+                elif len(face.vertices) == 3:
 
-                # if not edge_change do steiner_point
-                print("THIS FACE IS AS FOLLOWS:", face, face.edges)
-                steiner_point, changed_edge = calculate_steiner_point(face)
-                if steiner_point:
-                    geo.loose_edge(changed_edge)
-                    if changed_edge in result.g_edges:
-                        result.g_edges.remove(changed_edge)
-                    result.g_steiner_points.append(steiner_point)
-                    result.step(steiner_point, color=vis.CP_STEINER)  # visualize the steiner point
-                    result.step(changed_edge, color=vis.CL_REMOVE)
-                    new_faces = add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
-                    
-                    for f in new_faces:
-                        faces_to_look_at.append(f)
-                    
-                    if changed_edge.face in faces_to_look_at:
-                        faces_to_look_at.remove(changed_edge.face)
-                    if changed_edge.twin.face in faces_to_look_at:
-                        faces_to_look_at.remove(changed_edge.twin.face)   
-        else:
-            result.step(face, color=vis.CF_VALID)
+                    # Check if edge change would make sense (both obtuse)
+                    # Change Edge
+                    # Remove old faces and add new faces
+                    opposite_face, new_faces = _swap_edges(face)
+                    if len(new_faces) > 0:
+                        if opposite_face in faces_to_look_at:
+                            faces_to_look_at.remove(opposite_face)
+                        result.step(new_faces[0].edge, color=vis.CL_NORMAL)
+                        for f in new_faces:
+                            if f:
+                                faces_to_look_at.append(f)
+                                result.step(f, color=vis.CF_CHECK)
+                        continue
 
+                    # if not edge_change do steiner_point
+                    print("THIS FACE IS AS FOLLOWS:", face, face.edges)
+                    steiner_point, changed_edge = calculate_steiner_point(face)
+                    if steiner_point:
+                        geo.loose_edge(changed_edge)
+                        if changed_edge in result.g_edges:
+                            result.g_edges.remove(changed_edge)
+                        result.g_steiner_points.append(steiner_point)
+                        result.step(steiner_point, color=vis.CP_STEINER)  # visualize the steiner point
+                        result.step(changed_edge, color=vis.CL_REMOVE)
+                        new_faces = add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
+                        
+                        for f in new_faces:
+                            faces_to_look_at.append(f)
+                        
+                        if changed_edge.face in faces_to_look_at:
+                            faces_to_look_at.remove(changed_edge.face)
+                        if changed_edge.twin.face in faces_to_look_at:
+                            faces_to_look_at.remove(changed_edge.twin.face)   
+                    
+                    #while face in faces_to_look_at:
+                        #faces_to_look_at.remove(face)
+            else:
+                result.step(face, color=vis.CF_VALID)
+    except:
+        vis.show_result(problem, result, show_faces=True)
     return result
 
 #Helper functions:
@@ -131,6 +136,14 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
+    print("STEINERPPPP", steiner_point, edges)
+
+    # Check if steiner point is already in triangulation
+    for point in [e.origin for e in edges]:
+        if steiner_point.x == point.x and steiner_point.y == point.y:
+            print("Steiner point is already in triangulation")
+            return []
+
     #print("Kanten des Dreiecks wo Steinerpunkt hinzugefügt wird", edges)
     for edge in edges:
         new_edge = geo.HalfEdge(steiner_point, edge.origin)
@@ -195,10 +208,10 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     opposite_obtuse_edge = obtuse_edge.next.twin.next.next
 
     # check if other side is also obtuse
-    if not opposite_face or not opposite_face.is_clockwise():
+    if not opposite_face or not opposite_face.is_clockwise() or not geo.is_valid_triangle(opposite_face.edge):
         return opposite_face, []
     if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90:
-        return opposite_face, [] 
+        return opposite_face, [] #könnte man weg lassen 
 
 
     #remove old edge
@@ -214,9 +227,12 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
 
     current = obtuse_edge
 
-    for _ in range(4):
+    print("Connecting")
+    counter = 4
+    while counter > 0:
         print("--",current)
-        current = current.prev
+        current = current.next
+        counter -= 1
     
     if current != obtuse_edge:
         raise Exception("EDGE")
