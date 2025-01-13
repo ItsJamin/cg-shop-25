@@ -159,3 +159,40 @@ def show_results_by_final_data(result: Result):
     plt.show()
 
 
+
+def plot_dcel(vertices, edges, title="DCEL Plot"):
+    """
+    Plots a DCEL representation using matplotlib.
+
+    Parameters:
+        vertices (list[Vertex]): List of vertices in the DCEL.
+        edges (list[HalfEdge]): List of half-edges in the DCEL.
+        title (str): Title of the plot.
+    """
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    # Plot edges
+    for edge in edges:
+        origin = edge.origin
+        target = edge.twin.origin
+        ax.plot([float(origin.x), float(target.x)],
+                [float(origin.y), float(target.y)],
+                'b-', label='Edge' if 'Edge' not in ax.get_legend_handles_labels()[1] else "")
+
+    # Plot vertices with different colors
+    colors = plt.cm.get_cmap('tab10', len(vertices))
+    for i, vertex in enumerate(vertices):
+        ax.plot(float(vertex.x), float(vertex.y), 'o', color=colors(i), label=f'Vertex {i+1}' if f'Vertex {i+1}' not in ax.get_legend_handles_labels()[1] else "")
+        #ax.text(float(vertex.x), float(vertex.y), f"({vertex.x}, {vertex.y})", fontsize=8, ha='right')
+
+
+
+    # Set plot attributes
+    ax.set_aspect('equal', adjustable='box')  # Make the window square
+    ax.set_xlabel('X-coordinate')
+    ax.set_ylabel('Y-coordinate')
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True)
+
+    plt.show()

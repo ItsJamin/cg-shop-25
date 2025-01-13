@@ -255,18 +255,33 @@ def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
 
 
 
-def angle_between_edges(edge1: HalfEdge, edge2: HalfEdge) -> float:
+def angle_between_edges(edge1, edge2):
+    """
+    Calculates the angle in degrees between two edges using fractions.
+
+    Parameters:
+        edge1 (HalfEdge): The first edge.
+        edge2 (HalfEdge): The second edge.
+
+    Returns:
+        float: The angle between the edges in degrees.
+    """
+
+    # Get direction vectors of the edges
     dir1 = edge1.direction()
     dir2 = edge2.direction()
 
-    norm1 = math.sqrt(dir1[0] ** 2 + dir1[1] ** 2)
-    norm2 = math.sqrt(dir2[0] ** 2 + dir2[1] ** 2)
+    # Calculate the dot product using fractions
+    dot_product = dir1[0] * dir2[0] + dir1[1] * dir2[1]
+    magnitude1 = math.sqrt(float(dir1[0]**2 + dir1[1]**2))
+    magnitude2 = math.sqrt(float(dir2[0]**2 + dir2[1]**2))
 
-    dot_product = Fraction(dir1[0] * dir2[0] + dir1[1] * dir2[1])
-    cross_product = Fraction(dir1[0] * dir2[1] - dir1[1] * dir2[0])
-    # TODO: check if works bc will be transformed into float
-    angle = math.degrees(math.atan2(float(cross_product), float(dot_product)))
-    return angle % 360  
+    # Calculate the angle in radians and then convert to degrees
+    angle_radians = math.acos(float(dot_product) / (magnitude1 * magnitude2))
+    angle_degrees = math.degrees(angle_radians)
+
+    return angle_degrees
+
 def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool = True):
     """
     Checks if an edge is inside the face through a checking angle to edge_faces.

@@ -3,6 +3,7 @@ from instance import Problem, Result
 import geometry as geo
 import visualization as vis
 import numpy as np
+import math
 
 def steiner_points(faces_to_look_at, all_edges, problem, result):
     # Fix obtuse triangles by placing Steiner points
@@ -13,8 +14,8 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
 
         if not geo.is_non_obtuse_triangle(face):
 
-            if len(face.vertices) == 4:  # should be 4-polygon
-                new_faces = divide_trapezoid(face)
+            if len(face._get_vertices()) == 4:  # should be 4-polygon
+                new_faces = divide_steiner_point_quadrangle(face)
                 if len(new_faces) > 0:
                     result.g_edges.append(new_faces[0].edge)
                     result.step(new_faces[0].edge, color=vis.CL_NORMAL)
@@ -24,7 +25,7 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                 else:
                     raise Exception("Wrong Face: ", face._get_edges())
                     result.step(face, color=vis.CF_ERROR)
-            elif len(face.vertices) == 3:
+            elif len(face._get_vertices()) == 3:
 
                 opposite_face, new_faces = _swap_edges(face)
                 if len(new_faces) > 0:
@@ -62,50 +63,80 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
     return result
 
 def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
-    edge = face.edge
-    vertices = [edge.origin, edge.next.origin, edge.next.next.origin]
+    """
+    Berechnet den Steiner-Punkt für ein Dreieck mit einer stumpfen Ecke.
 
-    angles = []
+    Parameter:
+        face (Face): Ein Dreieck (Face-Objekt) mit genau drei Ecken.
+
+    Rückgabe:
+        tuple[Vertex, HalfEdge]:
+            - Der neue Vertex (Steiner-Punkt)
+            - Die neue Kante (HalfEdge), die den stumpfwinkligen Vertex mit dem Steiner-Punkt verbindet
+    """
+    if len(face._get_vertices()) != 3:
+        raise ValueError("Die Funktion funktioniert nur für Dreiecke.")
+
+    vertices = face._get_vertices()
+    edges = face._get_edges()
+
+    # Hilfsfunktion: Berechnung des Kosinus des Winkels an einem Vertex
+    def cosine_angle(v1, v2, v3):
+        """Berechnet den Kosinus des Winkels bei v2 zwischen v1 und v3 mit Fraction."""
+        vec1 = [v1.x - v2.x, v1.y - v2.y]
+        vec2 = [v3.x - v2.x, v3.y - v2.y]
+        dot_product = vec1[0] * vec2[0] + vec1[1] * vec2[1]
+        norm1 = (vec1[0]**2 + vec1[1]**2)
+        norm2 = (vec2[0]**2 + vec2[1]**2)
+        return dot_product / math.sqrt(norm1 * norm2)
+
+    # Den stumpfwinkligen Vertex finden (Cosinus-Wert < 0)
+    obtuse_vertex = None
+    opposite_edge = None
     for i in range(3):
-        v1 = [Fraction(coord) for coord in (vertices[i - 1].position() - vertices[i].position())]
-        v2 = [Fraction(coord) for coord in (vertices[(i + 1) % 3].position() - vertices[i].position())]
+        v1 = vertices[i - 1]
+        v2 = vertices[i]
+        v3 = vertices[(i + 1) % 3]
+        if cosine_angle(v1, v2, v3) < 0:
+            obtuse_vertex = v2
+            opposite_edge = edges[i]
+            break
 
-        dot_product = sum(v1[j] * v2[j] for j in range(len(v1)))
-        norm_v1 = Fraction(np.sqrt(float(sum(coord ** 2 for coord in v1))))
-        norm_v2 = Fraction(np.sqrt(float(sum(coord ** 2 for coord in v2))))
+    if obtuse_vertex is None:
+        raise ValueError("Das Dreieck hat keinen stumpfen Winkel.")
 
-        angle = Fraction(dot_product) / (norm_v1 * norm_v2)
-        angles.append(np.arccos(float(angle)))
+    # Orthogonale Projektion des stumpfwinkligen Vertex auf die gegenüberliegende Kante
+    edge_dir = [
+        opposite_edge.twin.origin.x - opposite_edge.origin.x,
+        opposite_edge.twin.origin.y - opposite_edge.origin.y
+    ]
+    edge_origin = [opposite_edge.origin.x, opposite_edge.origin.y]
+    obtuse_pos = [obtuse_vertex.x, obtuse_vertex.y]
 
-    obtuse_index = max(range(3), key=lambda i: angles[i])
-    if angles[obtuse_index] <= np.pi / 2:
-        return None, None
+    # Projektion des Punktes auf die Kante
+    t_numerator = (obtuse_pos[0] - edge_origin[0]) * edge_dir[0] + (obtuse_pos[1] - edge_origin[1]) * edge_dir[1]
+    t_denominator = edge_dir[0]**2 + edge_dir[1]**2
+    t = t_numerator / t_denominator
 
-    A = vertices[obtuse_index]
-    B = vertices[(obtuse_index + 1) % 3]
-    C = vertices[(obtuse_index + 2) % 3]
+    projection = [
+        edge_origin[0] + t * edge_dir[0],
+        edge_origin[1] + t * edge_dir[1]
+    ]
 
-    A_pos = [Fraction(coord) for coord in A.position()]
-    B_pos = [Fraction(coord) for coord in B.position()]
-    C_pos = [Fraction(coord) for coord in C.position()]
+    # Neuen Vertex und neue Kante erzeugen
+    steiner_vertex = geo.Vertex(float(projection[0]), float(projection[1]))
+    
+    try:
+        steiner_edge = geo.HalfEdge(origin=obtuse_vertex, endpoint=steiner_vertex)
+    except:
+        print("Steinerpoint an gleicher stelle wie ein Punkt vom Dreieck")
+        print(vertices)
+        print(steiner_vertex)
 
-    BC_vector = [C_pos[i] - B_pos[i] for i in range(2)]
-    BC_length = Fraction(np.sqrt(float(sum(coord ** 2 for coord in BC_vector))))
-    BC_unit = [BC_vector[i] / BC_length for i in range(2)]
+    #for point in vertices
 
-    projection_length = sum((A_pos[i] - B_pos[i]) * BC_unit[i] for i in range(2))
-    projection_point = [B_pos[i] + projection_length * BC_unit[i] for i in range(2)]
+    return steiner_vertex, opposite_edge
 
-    if projection_length < 0:
-        steiner_point_position = B_pos
-    elif projection_length > BC_length:
-        steiner_point_position = C_pos
-    else:
-        steiner_point_position = projection_point
-
-    changed_edge = [edge for edge in B.edges if edge.twin.origin == C][0]
-
-    return geo.Vertex(float(steiner_point_position[0]), float(steiner_point_position[1])), changed_edge
 
 def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], changed_edge: geo.HalfEdge, result: Result) -> list[geo.Face]:
     edges = [face.edge, face.edge.next, face.edge.next.next]
@@ -135,14 +166,20 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
 
     return return_faces
 
-def divide_trapezoid(face: geo.Face) -> list[geo.Face]:
-    edges = face.edges
+def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
+    """
+    Divides 4-Polygon (triangle with 4-polygon) in two triangles (FOR STEINER POINTS).
+    Searches for the steiner point and draws line to opposite point.
+    """
+    edges = face._get_edges()
     faces = []
 
     for edge in edges:
         angle = geo.angle_between_edges(edge.twin, edge.next)
+        print(angle)
 
-        if np.isclose(angle, 180) or np.isclose(180, 179): #TODO: ???
+        if np.isclose(angle, 180): #TODO: ???
+            print(edge)
             new_edge = geo.HalfEdge(edge.next.origin, edge.next.next.next.origin)
             geo.connect_to_grid(new_edge)
 

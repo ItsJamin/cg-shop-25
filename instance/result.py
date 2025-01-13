@@ -69,7 +69,7 @@ class Result():
         elif type(object) == geo.HalfEdge and object.has_twin():
             points = np.concatenate([object.origin.position(),object.twin.origin.position()])
         elif type(object) == geo.Face:
-            face_points = [v.position() for v in object.vertices]
+            face_points = [v.position() for v in object._get_vertices()]
 
             points = np.concatenate(face_points)
         else:

@@ -133,7 +133,7 @@ class Face:
 
 
     def __repr__(self):
-        return f"[{self.vertices}]"
+        return f"[{self._get_vertices()}]"
 
     def set_face_of_edges(self):
         for edge in self._get_edges():
