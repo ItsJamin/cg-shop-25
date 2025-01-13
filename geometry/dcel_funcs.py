@@ -1,29 +1,28 @@
 from .dcel import *
-import numpy as np
+from fractions import Fraction
+import math
 
-def connect_edges(edge1 : HalfEdge, edge2 : HalfEdge):
+def connect_edges(edge1: HalfEdge, edge2: HalfEdge):
     """
     Links to neighbouring edges together. Order is important!
     edge1 -> Point -> edge2
     """
-
     if not edge1.has_twin() and edge2.has_twin():
         raise Exception("Can't connect unfinished edges. One of the HalfEdges has no twin.")
 
     if edge1.twin.origin != edge2.origin:
         raise Exception("Second Edge does not start in First Edge's endpoint.")
-    
+
     edge1.next = edge2
     edge2.prev = edge1
 
     edge1.twin.prev = edge2.twin
     edge2.twin.next = edge1.twin
 
-def is_valid_triangle(edge : HalfEdge) -> bool:
+def is_valid_triangle(edge: HalfEdge) -> bool:
     """
     Checks for triangles bei going through the linked edges three times and expecting to be at the start edge.
     """
-
     current_n = edge
     current_p = edge
 
@@ -33,21 +32,15 @@ def is_valid_triangle(edge : HalfEdge) -> bool:
             current_p = current_p.prev
         else:
             return False
-    
+
     return current_n == edge and current_p == edge
 
-
-def is_non_obtuse_triangle(face : Face) -> bool:
-    
+def is_non_obtuse_triangle(face: Face) -> bool:
     edge = face.edge
-    if is_valid_triangle(edge): 
+    if is_valid_triangle(edge):
         e1 = edge
         e2 = edge.next
         e3 = edge.next.next
-
-        #angle1 = np.arccos(np.dot(v1, -v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-        #angle2 = np.arccos(np.dot(v2, -v3) / (np.linalg.norm(v2) * np.linalg.norm(v3)))
-        #angle3 = np.arccos(np.dot(v3, -v1) / (np.linalg.norm(v3) * np.linalg.norm(v1)))
 
         angle1 = angle_between_edges(e1.twin, e2)
         angle2 = angle_between_edges(e2.twin, e3)
@@ -65,12 +58,12 @@ def is_non_obtuse_triangle(face : Face) -> bool:
         return all(angle <= 90 for angle in angles)
     return False
 
-def get_obtuse_edge(face : Face) -> HalfEdge:
+def get_obtuse_edge(face: Face) -> HalfEdge:
     """
     Returns edge starting from point with obtuse angle (clockwise).
     """
     edge = face.edge
-    if is_valid_triangle(edge): 
+    if is_valid_triangle(edge):
         e1 = edge
         e2 = edge.next
         e3 = edge.next.next
@@ -81,10 +74,8 @@ def get_obtuse_edge(face : Face) -> HalfEdge:
 
         if angle1 > 90:
             return e2
-        
         if angle2 > 90:
             return e3
-        
         if angle3 > 90:
             return e1
 
@@ -143,7 +134,7 @@ def loose_edge(edge: HalfEdge):
     edge.twin.origin.edges.remove(edge.twin)
 
 
-def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> tuple[HalfEdge, HalfEdge]:
+def get_min_max_angle_edges(base_edge: HalfEdge, edge_list: list[HalfEdge]) -> tuple[HalfEdge, HalfEdge]:
     """
     This function calculates the HalfEdges in the given edge_list that have the smallest and largest angles 
     with respect to the direction of the base_edge.
@@ -156,39 +147,29 @@ def get_min_max_angle_edges(base_edge : HalfEdge, edge_list :list[HalfEdge]) -> 
     tuple[HalfEdge, HalfEdge]: A tuple containing the HalfEdge with the smallest angle (min_edge) and the HalfEdge with the largest angle (max_edge).
     If the edge_list is empty, the function returns (None, None).
     """
-
-    # TODO: durch angle-func ersetzen
     base_dir = base_edge.direction()
-    base_dir = base_dir / np.linalg.norm(base_dir)  # Normalize
-
-    if len(edge_list) == 0:
-        return (None,None)
+    base_dir = (Fraction(base_dir[0]), Fraction(base_dir[1]))
 
     angles = []
     for edge in edge_list:
-
         edge_dir = edge.direction()
-        edge_dir = edge_dir / np.linalg.norm(edge_dir)  # Normalize
+        edge_dir = (Fraction(edge_dir[0]), Fraction(edge_dir[1]))
 
-        # Calculate angle
-        dot_product = np.dot(base_dir, edge_dir)
-        cross_product = np.cross(base_dir, edge_dir)
+        dot_product = base_dir[0] * edge_dir[0] + base_dir[1] * edge_dir[1]
+        cross_product = base_dir[0] * edge_dir[1] - base_dir[1] * edge_dir[0]
 
-        # Calculate angle in radians and make it oriented
-        angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns oriented angle
-
-        # Cap angle in range 0 to 360
+        angle = math.degrees(math.atan2(float(cross_product), float(dot_product)))
         angle = angle % 360
-        angles.append((edge, angle))  # Convert angle to degrees
+        angles.append((edge, angle))
 
-    # Find min and max angle
-    min_edge, min_angle = min(angles, key=lambda x: x[1])
-    max_edge, max_angle = max(angles, key=lambda x: x[1])
+    if not angles:
+        return None, None
 
-    return (min_edge, max_edge)
+    min_edge, _ = min(angles, key=lambda x: x[1])
+    max_edge, _ = max(angles, key=lambda x: x[1])
+    return min_edge, max_edge
 
-
-def edges_intersect(edge1: HalfEdge, edge2: HalfEdge, on_edge_is_intersection = True) -> bool:
+def edges_intersect(edge1: HalfEdge, edge2: HalfEdge, on_edge_is_intersection=True) -> bool:
     """
     Determines if two edges (with twins) intersect.
     
@@ -204,80 +185,53 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge, on_edge_is_intersection = 
 
     on_edge_is_intersection: If True, edges that end in a point on the other edge (except endpoints) are counted.
     """
-
     def area(p1, p2, p3):
-        """Calculates the signed area of the triangle formed by three points."""
-        return 0.5 * ((p1[0] * (p2[1] - p3[1]) +
-                       p2[0] * (p3[1] - p1[1]) +
-                       p3[0] * (p1[1] - p2[1])))
-    
+        return Fraction(p1[0]) * (p2[1] - p3[1]) + Fraction(p2[0]) * (p3[1] - p1[1]) + Fraction(p3[0]) * (p1[1] - p2[1])
+
     def on_segment(p1, p2, q):
-        """Checks if point q lies on the line segment p1-p2."""
         return (min(p1[0], p2[0]) <= q[0] <= max(p1[0], p2[0]) and
                 min(p1[1], p2[1]) <= q[1] <= max(p1[1], p2[1]))
 
     common_endpoints = count_same_endpoints(edge1, edge2)
 
     if common_endpoints == 2:
-        #print("||| Have same points")
         return True
     elif common_endpoints == 1:
-        # TODO: check for collinearity
-        p1 = edge1.origin.position()
-        p2 = edge1.twin.origin.position()
-        p3 = edge2.origin.position()
-        p4 = edge2.twin.origin.position()
+        p1, p2 = edge1.origin.position(), edge1.twin.origin.position()
+        p3, p4 = edge2.origin.position(), edge2.twin.origin.position()
 
-        # Find the two edges that need to be looked at from the common point
         angle_edges = []
-        if np.array_equal(p1, p3):
+        if np.array_equal(p1,p3):
             angle_edges = [edge1, edge2]
-        elif np.array_equal(p2, p3):
+        elif np.array_equal(p2,p3):
             angle_edges = [edge1.twin, edge2]
-        elif np.array_equal(p1, p4):
+        elif np.array_equal(p1,p4):
             angle_edges = [edge1, edge2.twin]
-        else: # has to be p2, p4
-            angle_edges = [edge1.twin, edge2.twin]
-        
-        angle = angle_between_edges(*angle_edges)
-        #print(f"||| Have ome point in common and angle is, ", angle)
-        if angle == 0:
-            return True
         else:
-            return False
-            
+            angle_edges = [edge1.twin, edge2.twin]
 
+        angle = angle_between_edges(*angle_edges)
+        return angle == 0
     else:
-        # Check if lines intersect (using area method)
-        p1 = edge1.origin.position()
-        p2 = edge1.twin.origin.position()
-        p3 = edge2.origin.position()
-        p4 = edge2.twin.origin.position()
+        p1, p2 = edge1.origin.position(), edge1.twin.origin.position()
+        p3, p4 = edge2.origin.position(), edge2.twin.origin.position()
 
-        # Calculate areas
         a1 = area(p1, p2, p3)
         a2 = area(p1, p2, p4)
         a3 = area(p3, p4, p1)
         a4 = area(p3, p4, p2)
 
-        # Check if areas have opposite signs
         if a1 * a2 < 0 and a3 * a4 < 0:
             return True
-        
-        # Check if really on a line
-        is_collinear = False
-        if (a1 * a2 == 0 and a3 * a4 == 0):
-            is_collinear = True
 
-        # Check for collinear overlap
-        if np.isclose(a1, 0) and on_segment(p1, p2, p3):
-            return is_collinear or on_edge_is_intersection
-        if np.isclose(a2, 0) and on_segment(p1, p2, p4):
-            return is_collinear or on_edge_is_intersection
-        if np.isclose(a3, 0) and on_segment(p3, p4, p1):
-            return is_collinear or on_edge_is_intersection
-        if np.isclose(a4, 0) and on_segment(p3, p4, p2):
-            return is_collinear or on_edge_is_intersection
+        if a1 == 0 and on_segment(p1, p2, p3):
+            return on_edge_is_intersection
+        if a2 == 0 and on_segment(p1, p2, p4):
+            return on_edge_is_intersection
+        if a3 == 0 and on_segment(p3, p4, p1):
+            return on_edge_is_intersection
+        if a4 == 0 and on_segment(p3, p4, p2):
+            return on_edge_is_intersection
 
     return False
 
@@ -300,37 +254,19 @@ def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
     return len(endpoints1 & endpoints2)
 
 
+
 def angle_between_edges(edge1: HalfEdge, edge2: HalfEdge) -> float:
-    """
-    Calculates the angle (in degrees) between two edges.
-
-    Parameters:
-        edge1 (HalfEdge): The first edge.
-        edge2 (HalfEdge): The second edge.
-
-    Returns:
-        float: The angle between the two edges in degrees.
-    """
-    # Direction vectors of the two edges
     dir1 = edge1.direction()
     dir2 = edge2.direction()
 
-    # Normalize the direction vectors
-    dir1 = dir1 / np.linalg.norm(dir1)
-    dir2 = dir2 / np.linalg.norm(dir2)
+    norm1 = math.sqrt(dir1[0] ** 2 + dir1[1] ** 2)
+    norm2 = math.sqrt(dir2[0] ** 2 + dir2[1] ** 2)
 
-    # Calculate the dot product and the cross product
-    dot_product = np.dot(dir1, dir2)
-    cross_product = np.cross(dir1, dir2)
-
-    # Calculate the angle in radians using arctan2 for orientation
-    angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns the oriented angle
-
-    # Cap angle in range 0 to 360
-    angle = angle % 360 % 360 #interesting modulo behavior where it needs it two times
-
-    return angle
-
+    dot_product = Fraction(dir1[0] * dir2[0] + dir1[1] * dir2[1])
+    cross_product = Fraction(dir1[0] * dir2[1] - dir1[1] * dir2[0])
+    # TODO: check if works bc will be transformed into float
+    angle = math.degrees(math.atan2(float(cross_product), float(dot_product)))
+    return angle % 360  
 def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool = True):
     """
     Checks if an edge is inside the face through a checking angle to edge_faces.

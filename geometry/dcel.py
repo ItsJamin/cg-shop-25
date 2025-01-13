@@ -1,4 +1,5 @@
 import numpy as np
+from fractions import Fraction
 
 class Vertex:
     def __init__(self, 
@@ -6,8 +7,8 @@ class Vertex:
                  y: float,
                  is_constraint: bool = False):
         """Representation of a point, has references to all outgoing points."""
-        self.x = x
-        self.y = y
+        self.x = Fraction(x)
+        self.y = Fraction(y)
         self.edges = []
         self.is_constraint = is_constraint
 
@@ -57,13 +58,17 @@ class HalfEdge:
         if not self.twin:
             raise Warning("HalfEdge ohne Zwilling definiert.")
     
-    def direction(self) -> np.ndarray:
-        """Returns the direction vector from the origin to the endpoint."""
-        return self.twin.origin.position() - self.origin.position()
+    def direction(self):
+        """Gibt den Richtungsvektor als numpy-Array mit Brüchen zurück."""
+        dx = self.twin.origin.x - self.origin.x
+        dy = self.twin.origin.y - self.origin.y
+        return np.array([dx, dy])
 
-    def length(self) -> float:
-        """Calculates the Euclidean length of the edge."""
-        return np.linalg.norm(self.direction())
+    def length(self):
+        """Berechnet die Länge der Kante exakt als Bruch."""
+        dx = self.twin.origin.x - self.origin.x
+        dy = self.twin.origin.y - self.origin.y
+        return (dx**2 + dy**2).sqrt()
     
     def has_twin(self):
         return self.twin is not None
@@ -156,17 +161,4 @@ class Face:
     def _get_vertices(self) -> list[Vertex]:
         """Gives all vertices of face in cyclical order."""
         return [edge.origin for edge in self._get_edges()]
-
-    def get_area(self) -> float:
-        """Calculates area of face with shoelace formula."""
-        vertices = self._get_vertices()
-        n = len(vertices)
-        if n < 3:  # no valid polygon
-            return 0
-        area = 0
-        for i in range(n):
-            x1, y1 = vertices[i].position()
-            x2, y2 = vertices[(i + 1) % n].position()
-            area += x1 * y2 - y1 * x2
-        return abs(area) / 2
 
