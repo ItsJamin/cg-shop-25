@@ -40,13 +40,16 @@ class Problem():
             current = geo.HalfEdge(self.g_points[bound[i]], self.g_points[bound[i+1]], reference_from_below=True, is_constraint=True)
 
             if last_edge is not None:
-                geo.connect_edges(last_edge, current)
+                #geo.connect_edges(last_edge, current)
+                geo.connect_to_grid(current)
             else:
                 start_edge = current
+                geo.connect_to_grid(current)
             
             last_edge = current
         
         geo.connect_edges(last_edge, start_edge)
+        geo.connect_to_grid(current)
 
         self.g_region_boundary = geo.Face(start_edge)
         if self.g_region_boundary.is_clockwise():
