@@ -11,6 +11,7 @@ def connect_edges(edge1: HalfEdge, edge2: HalfEdge):
         raise Exception("Can't connect unfinished edges. One of the HalfEdges has no twin.")
 
     if edge1.twin.origin != edge2.origin:
+        print(edge1, edge2)
         raise Exception("Second Edge does not start in First Edge's endpoint.")
 
     edge1.next = edge2
@@ -26,7 +27,9 @@ def is_valid_triangle(edge: HalfEdge) -> bool:
     current_n = edge
     current_p = edge
 
+    print("TRIANGLE")
     for _ in range(3):
+        print(current_n, current_p)
         if current_n and current_p:
             current_n = current_n.next
             current_p = current_p.prev
@@ -79,7 +82,7 @@ def get_obtuse_edge(face: Face) -> HalfEdge:
         if angle3 > 90:
             return e1
 
-def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
+def connect_to_grid(edge : HalfEdge, clockwise = True) -> tuple[Face, Face]:
     """
     Connects a given HalfEdge to a grid by finding the closest and farthest edges from its origin and twin's origin.
     It then updates the next and prev pointers of the HalfEdges to form a closed loop.
@@ -94,6 +97,9 @@ def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
     """
     # Endpoint 
     close_edge, far_edge = get_min_max_angle_edges(edge.twin, edge.twin.origin.edges)
+    if not clockwise:
+        close_edge, far_edge = far_edge, close_edge
+    
 
     if close_edge and far_edge:
         edge.next = close_edge
@@ -104,6 +110,8 @@ def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
 
     # Origin
     close_edge, far_edge = get_min_max_angle_edges(edge, edge.origin.edges)
+    if not clockwise:
+        close_edge, far_edge = far_edge, close_edge
 
     if close_edge and far_edge:
         edge.twin.next = close_edge
@@ -129,7 +137,6 @@ def connect_to_grid(edge : HalfEdge) -> tuple[Face, Face]:
 
 def loose_edge(edge: HalfEdge):
     """Uncopples edge from its prev and next and from the points"""
-
     edge.origin.edges.remove(edge)
     edge.twin.origin.edges.remove(edge.twin)
 
@@ -255,32 +262,45 @@ def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
 
 
 
+import math
+
 def angle_between_edges(edge1, edge2):
     """
-    Calculates the angle in degrees between two edges using fractions.
+    Berechnet den Winkel im Uhrzeigersinn zwischen zwei Kanten.
 
-    Parameters:
-        edge1 (HalfEdge): The first edge.
-        edge2 (HalfEdge): The second edge.
+    Parameter:
+        edge1 (HalfEdge): Die erste Kante.
+        edge2 (HalfEdge): Die zweite Kante.
 
-    Returns:
-        float: The angle between the edges in degrees.
+    Rückgabewert:
+        float: Der Winkel zwischen den Kanten in Grad, im Uhrzeigersinn.
     """
-
-    # Get direction vectors of the edges
+    # Richtung der Kanten als Vektoren abrufen
     dir1 = edge1.direction()
     dir2 = edge2.direction()
 
-    # Calculate the dot product using fractions
+    # Berechne das Kreuzprodukt
+    cross_product = dir1[0] * dir2[1] - dir1[1] * dir2[0]
+    
+    # Berechne das Skalarprodukt (dot product)
     dot_product = dir1[0] * dir2[0] + dir1[1] * dir2[1]
-    magnitude1 = math.sqrt(float(dir1[0]**2 + dir1[1]**2))
-    magnitude2 = math.sqrt(float(dir2[0]**2 + dir2[1]**2))
 
-    # Calculate the angle in radians and then convert to degrees
-    angle_radians = math.acos(float(dot_product) / (magnitude1 * magnitude2))
+    # Berechne die Längen (Beträge) der Vektoren
+    magnitude1 = math.sqrt(dir1[0]**2 + dir1[1]**2)
+    magnitude2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
+
+    # Berechne den Winkel in Radiant
+    angle_radians = math.acos(dot_product / (magnitude1 * magnitude2))
+
+    # Wenn das Kreuzprodukt negativ ist, dann ist der Winkel im Uhrzeigersinn
+    if cross_product < 0:
+        angle_radians = -angle_radians
+    
+    # Konvertiere den Winkel in Grad
     angle_degrees = math.degrees(angle_radians)
 
-    return angle_degrees
+    return (360+angle_degrees) % 360
+
 
 def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool = True):
     """

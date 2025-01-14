@@ -3,10 +3,16 @@ import geometry as geo
 import numpy as np
 import visualization as vis
 
-def triangulation_greedy(problem, result):
+def triangulation_greedy(problem : Problem, result : Result):
 
     all_edges = problem.g_constraints + problem.g_region_boundary.edges
     faces_to_look_at = []
+
+    for e in all_edges:
+        for f in [e.face, e.twin.face]:
+            if f and geo.is_valid_triangle(f.edge):
+                faces_to_look_at.append(f)
+                result.step(f, vis.CF_CHECK)
 
     # create sorted list of points from top to bottom
     points = sort_points_top_down(problem.g_points)
@@ -20,11 +26,15 @@ def triangulation_greedy(problem, result):
             if geo.no_edge_intersection(temp_edge, all_edges) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
                 result.g_edges.append(temp_edge)
                 all_edges.append(temp_edge)
-                geo.connect_to_grid(temp_edge)
+                f1, f2 = geo.connect_to_grid(temp_edge)
 
                 result.step(temp_edge, color=vis.CL_NORMAL)
 
-                for f in [temp_edge.face, temp_edge.twin.face]:
+
+
+                print("PARTY", f1, f2)
+                print("___", geo.is_valid_triangle(temp_edge),geo.is_valid_triangle(temp_edge.twin))
+                for f in [f1, f2]:
                     if f:
                         if geo.is_non_obtuse_triangle(f):
                             result.step(f, color=vis.CF_VALID)

@@ -40,8 +40,8 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
 
                 print("THIS FACE IS AS FOLLOWS:", face, face.edges)
                 steiner_point, changed_edge = calculate_steiner_point(face)
-                if steiner_point:
-                    geo.loose_edge(changed_edge)
+                if steiner_point:               
+                    geo.loose_edge(changed_edge) # WRONG
                     if changed_edge in result.g_edges:
                         result.g_edges.remove(changed_edge)
                     result.g_steiner_points.append(steiner_point)

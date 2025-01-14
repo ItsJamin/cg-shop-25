@@ -8,9 +8,9 @@ if __name__ == '__main__':
     # ----- Main Logic ----- #
 
     # create problem from json file
-    #problem = inp.load_problem("test.json")
+    problem = inp.load_problem("test.json")
     #problem = inp.load_problem("cgshop2025_examples_simple-polygon_10_81177380.instance.json")
-    problem = inp.load_problem("cgshop2025_examples_simple-polygon-exterior-20_10_a557fecb.instance.json")
+    #problem = inp.load_problem("cgshop2025_examples_simple-polygon-exterior-20_10_a557fecb.instance.json")
     #problem = inp.load_problem(inp.get_random_file_from_dir())
     #problem = inp.load_problem("cgshop2025_examples_ortho_60_f31194db.instance.json") 
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     vis.show_result(problem, solution, show_faces=True)
     
     # visualize the problem and animate the solution steps
-    vis.animate_algorithm(problem, solution, interval=300, show_faces=True)
+    vis.animate_algorithm(problem, solution, interval=500, show_faces=True)
 
     # ----- Geometric Representation ----- #
 
