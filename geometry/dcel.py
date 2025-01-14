@@ -92,6 +92,8 @@ class Face:
 
         if reference_from_below:
             self.set_face_of_edges()
+        
+        self.edges = self._get_edges()
     
 
     def is_clockwise(self) -> bool:

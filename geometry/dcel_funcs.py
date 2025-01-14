@@ -290,7 +290,10 @@ def angle_between_edges(edge1, edge2):
     magnitude2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
 
     # Berechne den Winkel in Radiant
-    angle_radians = math.acos(dot_product / (magnitude1 * magnitude2))
+    print(dot_product, magnitude1, magnitude2)
+    cosine_value = dot_product / (magnitude1 * magnitude2)
+    cosine_value = max(-1.0, min(1.0, cosine_value))  # Clamp to [-1, 1]
+    angle_radians = math.acos(cosine_value)
 
     # Wenn das Kreuzprodukt negativ ist, dann ist der Winkel im Uhrzeigersinn
     if cross_product < 0:
