@@ -5,61 +5,64 @@ import visualization as vis
 import numpy as np
 import math
 
+swap_edge = True
 def steiner_points(faces_to_look_at, all_edges, problem, result):
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
     i = 0
-    while len(faces_to_look_at) > 0:
-        i += 1
-        face = faces_to_look_at.pop()
+    try:
+        while len(faces_to_look_at) > 0:
+            i += 1
+            face = faces_to_look_at.pop()
 
-        if not geo.is_non_obtuse_triangle(face):
-
-            if len(face._get_vertices()) == 4:  # should be 4-polygon
-                new_faces = divide_steiner_point_quadrangle(face)
-                if len(new_faces) > 0:
-                    result.g_edges.append(new_faces[0].edge)
-                    result.step(new_faces[0].edge, color=vis.CL_NORMAL)
-                    for f in new_faces:
-                        faces_to_look_at.append(f)
-                        result.step(f, color=vis.CF_CHECK)
-                else:
-                    raise Exception("Wrong Face: ", face._get_edges())
-                    result.step(face, color=vis.CF_ERROR)
-            elif len(face._get_vertices()) == 3:
-
-                opposite_face, new_faces = _swap_edges(face)
-                if len(new_faces) > 0:
-                    if opposite_face in faces_to_look_at:
-                        faces_to_look_at.remove(opposite_face)
-                    result.step(new_faces[0].edge, color=vis.CL_NORMAL)
-                    for f in new_faces:
-                        if f:
+            if not geo.is_non_obtuse_triangle(face):
+                if len(face._get_vertices()) == 4:  # should be 4-polygon
+                    new_faces = divide_steiner_point_quadrangle(face)
+                    if len(new_faces) > 0:
+                        result.g_edges.append(new_faces[0].edge)
+                        result.step(new_faces[0].edge, color=vis.CL_NORMAL)
+                        for f in new_faces:
                             faces_to_look_at.append(f)
                             result.step(f, color=vis.CF_CHECK)
-                    continue
+                    else:
+                        #raise Exception("Wrong Face: ", face._get_edges())
+                        result.step(face, color=vis.CF_ERROR)
+                elif len(face._get_vertices()) == 3:
 
-                print("THIS FACE IS AS FOLLOWS:", face, face.edges)
-                steiner_point, changed_edge = calculate_steiner_point(face)
-                if steiner_point:               
-                    geo.loose_edge(changed_edge) # WRONG
-                    if changed_edge in result.g_edges:
-                        result.g_edges.remove(changed_edge)
-                    result.g_steiner_points.append(steiner_point)
-                    result.step(steiner_point, color=vis.CP_STEINER)
-                    result.step(changed_edge, color=vis.CL_REMOVE)
-                    new_faces = add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
+                    if swap_edge:
+                        opposite_face, new_faces = _swap_edges(face)
+                        if len(new_faces) > 0:
+                            if opposite_face in faces_to_look_at:
+                                faces_to_look_at.remove(opposite_face)
+                            result.step(new_faces[0].edge, color=vis.CL_NORMAL)
+                            for f in new_faces:
+                                if f:
+                                    faces_to_look_at.append(f)
+                                    result.step(f, color=vis.CF_CHECK)
+                            continue
 
-                    for f in new_faces:
-                        faces_to_look_at.append(f)
+                    print("THIS FACE IS AS FOLLOWS:", face, face.edges)
+                    steiner_point, changed_edge = calculate_steiner_point(face)
+                    if steiner_point:               
+                        geo.loose_edge(changed_edge) # WRONG
+                        if changed_edge in result.g_edges:
+                            result.g_edges.remove(changed_edge)
+                        result.g_steiner_points.append(steiner_point)
+                        result.step(steiner_point, color=vis.CP_STEINER)
+                        result.step(changed_edge, color=vis.CL_REMOVE)
+                        new_faces = add_steiner_point_to_triangulation(steiner_point, face, all_edges, changed_edge, result)
 
-                    if changed_edge.face in faces_to_look_at:
-                        faces_to_look_at.remove(changed_edge.face)
-                    if changed_edge.twin.face in faces_to_look_at:
-                        faces_to_look_at.remove(changed_edge.twin.face)
-        else:
-            result.step(face, color=vis.CF_VALID)
+                        for f in new_faces:
+                            faces_to_look_at.append(f)
 
+                        if changed_edge.face in faces_to_look_at:
+                            faces_to_look_at.remove(changed_edge.face)
+                        if changed_edge.twin.face in faces_to_look_at:
+                            faces_to_look_at.remove(changed_edge.twin.face)
+            else:
+                result.step(face, color=vis.CF_VALID)
+    except:
+        vis.show_result(problem, result, show_faces=True)
     return result
 
 def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
@@ -124,13 +127,13 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
-    # Check if steiner point is already in triangulation
+    # Check for existing steiner point
     for point in [e.origin for e in edges]:
         if steiner_point.x == point.x and steiner_point.y == point.y:
             print("Steiner point is already in triangulation")
             return []
 
-    #print("Kanten des Dreiecks wo Steinerpunkt hinzugefügt wird", edges)
+    # Create Edges from the Steiner Point to the other points
     for edge in edges:
         new_edge = geo.HalfEdge(steiner_point, edge.origin)
         geo.connect_to_grid(new_edge)
@@ -142,24 +145,14 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
     # Create new faces for the triangulation
     return_faces = []
     for edge in new_edges:
-        #if geo.is_valid_triangle(edge):
-        try:
-            new_face = geo.Face(edge, reference_from_below=True)
-        except:
-            print("---------------------------------------------")
-            print("Steiner point",steiner_point)
-            print("New_Edges")
-            for e in new_edges:
-                print(e, e.next, e.next.next)
-            print("Old_Triangle", edges)
-            raise Exception("ERROR WHILE ADDING STEINER POINT FACE NOT CLOSED")
+        new_face = geo.Face(edge, reference_from_below=True)
         if new_face.is_clockwise():
             result.step(new_face, color=vis.CF_CHECK)
             if len(new_face.vertices) > 3: # the trapezoide should be handled first
                 return_faces.insert(0, new_face)
-            return_faces.append(new_face)
+            else:
+                return_faces.append(new_face)
 
-    #TODO: Gib die Faces um den neuen Steiner Punkt Zurück 
     return return_faces
 def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
     """
@@ -174,7 +167,7 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
         print(angle)
 
         if np.isclose(angle, 180): #TODO: ???
-            print(edge)
+            # Triangulate
             new_edge = geo.HalfEdge(edge.next.origin, edge.next.next.next.origin)
             geo.connect_to_grid(new_edge)
 
@@ -183,6 +176,10 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
             if new_edge.twin.face:
                 faces.append(new_edge.twin.face)
             break
+
+            if len(faces) < 2:
+                raise Error("Quadrangle not properly divided", faces)
+
 
     return faces
 
