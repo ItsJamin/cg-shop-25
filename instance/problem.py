@@ -36,7 +36,6 @@ class Problem():
 
         # representing boundary by connected list of HalfEdges
         for i in range(len(bound)-1):
-            print("GPOINT", self.g_points[bound[i]])
             current = geo.HalfEdge(self.g_points[bound[i]], self.g_points[bound[i+1]], reference_from_below=True, is_constraint=True)
 
             if last_edge is None:
@@ -64,8 +63,8 @@ class Problem():
             geo.connect_to_grid(edge1)
             self.g_constraints.append(edge1)
         
-        for p in self.g_points:
-            print(p, p.edges)
+        #for p in self.g_points:
+        #    print(p, p.edges)
 
     def validate_problem(self):
         # TODO: validate that the problem is well-formed

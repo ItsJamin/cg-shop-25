@@ -41,7 +41,6 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                                     result.step(f, color=vis.CF_CHECK)
                             continue
 
-                    print("THIS FACE IS AS FOLLOWS:", face, face.edges)
                     steiner_point, changed_edge = calculate_steiner_point(face)
                     if steiner_point:               
                         geo.loose_edge(changed_edge) # WRONG
@@ -61,8 +60,9 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                             faces_to_look_at.remove(changed_edge.twin.face)
             else:
                 result.step(face, color=vis.CF_VALID)
-    except:
+    except Exception as e:
         vis.show_result(problem, result, show_faces=True)
+        raise Exception(e)
     return result
 
 def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
@@ -130,7 +130,6 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
     # Check for existing steiner point
     for point in [e.origin for e in edges]:
         if steiner_point.x == point.x and steiner_point.y == point.y:
-            print("Steiner point is already in triangulation")
             return []
 
     # Create Edges from the Steiner Point to the other points
@@ -164,7 +163,6 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
 
     for edge in edges:
         angle = geo.angle_between_edges(edge.twin, edge.next)
-        print(angle)
 
         if np.isclose(angle, 180): #TODO: ???
             # Triangulate

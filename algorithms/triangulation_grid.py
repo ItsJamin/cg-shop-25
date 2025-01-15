@@ -76,7 +76,6 @@ def triangulation_grid(problem, result):
 
 
     #points in boundary
-    print("END")
     all_vertices = sort_points_left_right_bottom_top(all_vertices)
     
     temp_vertex = all_vertices.copy()

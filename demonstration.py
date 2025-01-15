@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # - cgshop2025_examples_simple-polygon_40_986defab.instance.json
     # - cgshop2025_examples_ortho_80_f9b89ad1.instance.json
 
-    file = "cgshop2025_examples_simple-polygon_40_986defab.instance.json"
+    file = "cgshop2025_examples_simple-polygon-exterior-20_80_23272e96.instance.json"
 
     for i in range(1):
         #file = inp.get_random_file_from_dir()

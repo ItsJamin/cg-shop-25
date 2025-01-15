@@ -20,7 +20,6 @@ def triangulation_greedy(problem : Problem, result : Result):
     for index, point in enumerate(points):
         # try to draw edges to each point above
         for prev_point in points[:index]:
-            #print(f"looking from {point} to {prev_point}")
             temp_edge = geo.HalfEdge(point, prev_point)          
 
             if geo.no_edge_intersection(temp_edge, all_edges) and geo.is_edge_in_boundary(temp_edge, problem.g_region_boundary):
@@ -30,10 +29,6 @@ def triangulation_greedy(problem : Problem, result : Result):
 
                 result.step(temp_edge, color=vis.CL_NORMAL)
 
-
-
-                print("PARTY", f1, f2)
-                print("___", geo.is_valid_triangle(temp_edge),geo.is_valid_triangle(temp_edge.twin))
                 for f in [f1, f2]:
                     if f:
                         if geo.is_non_obtuse_triangle(f):

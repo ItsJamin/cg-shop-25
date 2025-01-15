@@ -27,9 +27,7 @@ def is_valid_triangle(edge: HalfEdge) -> bool:
     current_n = edge
     current_p = edge
 
-    print("TRIANGLE")
     for _ in range(3):
-        print(current_n, current_p)
         if current_n and current_p:
             current_n = current_n.next
             current_p = current_p.prev
@@ -290,7 +288,6 @@ def angle_between_edges(edge1, edge2):
     magnitude2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
 
     # Berechne den Winkel in Radiant
-    print(dot_product, magnitude1, magnitude2)
     cosine_value = dot_product / (magnitude1 * magnitude2)
     cosine_value = max(-1.0, min(1.0, cosine_value))  # Clamp to [-1, 1]
     angle_radians = math.acos(cosine_value)
