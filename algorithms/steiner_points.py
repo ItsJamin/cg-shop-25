@@ -25,8 +25,8 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                             faces_to_look_at.append(f)
                             result.step(f, color=vis.CF_CHECK)
                     else:
-                        #raise Exception("Wrong Face: ", face._get_edges())
                         result.step(face, color=vis.CF_ERROR)
+                        raise Exception(f"Wrong Face (Quadrangle with no 180 degree angle) ({face._get_vertices()})")
                 elif len(face._get_vertices()) == 3:
 
                     if swap_edge:
@@ -116,7 +116,7 @@ def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     intersection = B + t * edge_vector
 
     # Schritt 3: Rückgabe des Steiner-Punkts und der gegenüberliegenden Kante
-    steiner_vertex = geo.Vertex(x=float(intersection[0]), y=float(intersection[1]))
+    steiner_vertex = geo.Vertex(x=intersection[0], y=intersection[1])
     return steiner_vertex, opposite_edge
 
 def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], changed_edge : geo.HalfEdge, result: Result) -> list[geo.Face]:
@@ -144,7 +144,11 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
     # Create new faces for the triangulation
     return_faces = []
     for edge in new_edges:
-        new_face = geo.Face(edge, reference_from_below=True)
+        try:
+            new_face = geo.Face(edge, reference_from_below=True)
+        except Exception as e:
+            result.step(edge, color=vis.CF_ERROR)
+            raise Exception(e)
         if new_face.is_clockwise():
             result.step(new_face, color=vis.CF_CHECK)
             if len(new_face.vertices) > 3: # the trapezoide should be handled first
@@ -163,7 +167,7 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
 
     for edge in edges:
         angle = geo.angle_between_edges(edge.twin, edge.next)
-
+        print(angle)
         if np.isclose(angle, 180): #TODO: ???
             # Triangulate
             new_edge = geo.HalfEdge(edge.next.origin, edge.next.next.next.origin)
@@ -173,10 +177,9 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
                 faces.append(new_edge.face)
             if new_edge.twin.face:
                 faces.append(new_edge.twin.face)
-            break
-
+            
             if len(faces) < 2:
-                raise Error("Quadrangle not properly divided", faces)
+                raise Exception("Quadrangle not properly divided", faces)
 
 
     return faces
