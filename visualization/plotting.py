@@ -196,3 +196,23 @@ def plot_dcel(vertices, edges, title="DCEL Plot"):
     ax.grid(True)
 
     plt.show()
+
+
+def debug_edges(edges, delay=1):
+    
+    plt.figure(figsize=(8, 6))
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.title("Step-by-Step Directed Graph Visualization")
+    plt.grid(True)
+    plt.axis('equal')
+
+    for i, ((x1, y1), (x2, y2)) in enumerate(edges):
+        # Zeichne die aktuelle Kante
+        plt.plot([x1, x2], [y1, y2], marker='o', label=f"Step {i+1}: {((x1, y1), (x2, y2))}")
+        plt.legend(loc='upper right', fontsize='small', bbox_to_anchor=(1.3, 1))
+        
+        # Aktualisiere den Plot
+        plt.pause(delay)
+
+    plt.show()

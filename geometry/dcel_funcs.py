@@ -131,6 +131,7 @@ def connect_to_grid(edge : HalfEdge, clockwise = True) -> tuple[Face, Face]:
     if is_valid_triangle(edge.twin):
         face_twin = Face(edge.twin, reference_from_below=True)
 
+    
     return face, face_twin
 
 def loose_edge(edge: HalfEdge):

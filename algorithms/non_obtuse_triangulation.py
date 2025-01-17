@@ -16,6 +16,7 @@ def non_obtuse_triangulation(problem: Problem) -> Result:
     
     #Greedy-Triangulation
     faces_to_look_at, all_edges, result = triangulation_greedy(problem, result)
+    vis.show_result(problem, result)
 
     #Steiner Points
     result = steiner_points(faces_to_look_at, all_edges, problem, result)

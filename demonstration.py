@@ -2,6 +2,7 @@ import visualization as vis
 import inpout as inp
 import geometry as geo
 import algorithms as alg
+import traceback
 
 if __name__ == '__main__':
 
@@ -19,11 +20,14 @@ if __name__ == '__main__':
     # - cgshop2025_examples_simple-polygon_40_986defab.instance.json
     # - cgshop2025_examples_ortho_80_f9b89ad1.instance.json
 
-    file = "cgshop2025_examples_simple-polygon-exterior-20_80_23272e96.instance.json"
+    print("Starting...")
+    file = "test.json"
+    folder = "assets/"
 
     for i in range(1):
         #file = inp.get_random_file_from_dir()
-        problem = inp.load_problem(file)
+        problem = inp.load_problem(file, folder)
+        vis.show_problem(problem)
         try: 
             solution = alg.non_obtuse_triangulation(problem)
             #vis.show_problem(problem)
@@ -36,3 +40,10 @@ if __name__ == '__main__':
         except Exception as e:
             print(e)
             print(file)
+
+            tb = e.__traceback__
+            while tb:
+                print(f"File: {tb.tb_frame.f_code.co_filename}, Line: {tb.tb_lineno}, Function: {tb.tb_frame.f_code.co_name}")
+                tb = tb.tb_next
+    
+    print("End")

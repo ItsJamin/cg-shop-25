@@ -4,9 +4,12 @@ import geometry as geo
 import visualization as vis
 import numpy as np
 import math
+import random
+
+random.seed(1)
 
 swap_edge = True
-def steiner_points(faces_to_look_at, all_edges, problem, result):
+def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Result):
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
     i = 0
@@ -14,6 +17,8 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
         while len(faces_to_look_at) > 0:
             i += 1
             face = faces_to_look_at.pop()
+            print("--",faces_to_look_at)
+            print("--", face)
 
             if not geo.is_non_obtuse_triangle(face):
                 if len(face._get_vertices()) == 4:  # should be 4-polygon
@@ -28,8 +33,7 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                         result.step(face, color=vis.CF_ERROR)
                         raise Exception(f"Wrong Face (Quadrangle with no 180 degree angle) ({face._get_vertices()})")
                 elif len(face._get_vertices()) == 3:
-
-                    if swap_edge:
+                    if swap_edge and random.random() > 0.1:
                         opposite_face, new_faces = _swap_edges(face)
                         if len(new_faces) > 0:
                             if opposite_face in faces_to_look_at:
@@ -39,11 +43,9 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                                 if f:
                                     faces_to_look_at.append(f)
                                     result.step(f, color=vis.CF_CHECK)
-                            continue
-
+                        continue
                     steiner_point, changed_edge = calculate_steiner_point(face)
                     if steiner_point:               
-                        geo.loose_edge(changed_edge) # WRONG
                         if changed_edge in result.g_edges:
                             result.g_edges.remove(changed_edge)
                         result.g_steiner_points.append(steiner_point)
@@ -60,9 +62,17 @@ def steiner_points(faces_to_look_at, all_edges, problem, result):
                             faces_to_look_at.remove(changed_edge.twin.face)
             else:
                 result.step(face, color=vis.CF_VALID)
+            if i > 2:
+                vis.show_result(problem, result)
+                i = 0
     except Exception as e:
-        vis.show_result(problem, result, show_faces=True)
-        raise Exception(e)
+        print(e)
+        #vis.show_result(problem, result, show_faces=True)
+        tb = e.__traceback__
+        while tb:
+            print(f"File: {tb.tb_frame.f_code.co_filename}, Line: {tb.tb_lineno}, Function: {tb.tb_frame.f_code.co_name}")
+            tb = tb.tb_next
+        
     return result
 
 def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
@@ -124,6 +134,8 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
     Updates the triangulation to include a Steiner point by splitting the obtuse triangle into smaller triangles.
     """
 
+    geo.loose_edge(changed_edge)
+
     edges = [face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
@@ -134,7 +146,7 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
 
     # Create Edges from the Steiner Point to the other points
     for edge in edges:
-        new_edge = geo.HalfEdge(steiner_point, edge.origin)
+        new_edge = geo.HalfEdge(edge.origin, steiner_point)
         geo.connect_to_grid(new_edge)
         all_edges.append(new_edge)
         new_edges.append(new_edge)
@@ -195,8 +207,11 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
 
     if not opposite_face or not opposite_face.is_clockwise() or not geo.is_valid_triangle(opposite_face.edge):
         return opposite_face, []
-    if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90: #TODO:
+    
+    # needs exit condition because it would do it infinetly
+    if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90 and random.random() < 0.4:
         return opposite_face, []
+
 
     edge_to_remove = obtuse_edge.next
     geo.loose_edge(edge_to_remove)
@@ -210,4 +225,6 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     new_edge = geo.HalfEdge(obtuse_edge.origin, opposite_obtuse_edge.origin)
     face1, face2 = geo.connect_to_grid(new_edge)
 
-    return opposite_face, [face1, face2]
+    faces = list(filter(None,[face1, face2]))
+
+    return opposite_face, faces

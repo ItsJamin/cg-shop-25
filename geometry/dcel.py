@@ -154,6 +154,7 @@ class Face:
             current = current.next
         
         if current != start:
+            print("-----")
             for edge in result:
                 print(edge)
             raise Exception("Face is not closed! Iterating through edges did not end in starting edge.")
