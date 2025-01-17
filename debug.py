@@ -1,3 +1,4 @@
+import test
 import visualization as vis
 import inpout as inp
 import geometry as geo
@@ -40,6 +41,10 @@ if __name__ == '__main__':
     ((2688777015119711/549755813888, 6245293403708867/17592186044416)) -> ((2688777015119711/549755813888, 3122646701854425/8796093022208))
     ((2688777015119711/549755813888, 3122646701854425/8796093022208)) -> ((1344388507559561/274877906944, 3122646701854677/8796093022208))
     """
+
+    # Testfunktion ausführen
+    test.test_calculate_steiner_point()
+    raise Exception("SUCCESS")
 
     result = inp.Result(problem=inp.load_problem("test.json"))
 

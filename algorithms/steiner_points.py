@@ -5,6 +5,8 @@ import visualization as vis
 import numpy as np
 import math
 import random
+from fractions import Fraction
+
 
 random.seed(1)
 
@@ -83,21 +85,20 @@ def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     :param face: Ein Dreieck (geo.Face) mit den drei Ecken.
     :return: Der berechnete Steiner-Punkt als geo.Vertex und die gegenüberliegende Kante.
     """
-    from fractions import Fraction
-    import numpy as np
 
     # Schritt 1: Identifiziere den stumpfen Winkel und die zugehörigen Kanten
     vertices = face._get_vertices()
     edges = face._get_edges()
     assert len(vertices) == 3, "Die Funktion funktioniert nur mit Dreiecken."
 
-    max_angle = 0
+    max_angle = 90
     obtuse_vertex = None
     opposite_edge = None
 
     for edge in edges:
         angle = geo.angle_between_edges(edge.prev.twin, edge)
         if angle > max_angle:
+            print("angle", angle, edge.origin)
             max_angle = angle
             obtuse_vertex = edge.origin
             opposite_edge = edge.next
@@ -107,8 +108,9 @@ def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     # Schritt 2: Berechne den Schnittpunkt der Orthogonalen mit der gegenüberliegenden Kante
     A = np.array([Fraction(obtuse_vertex.x), Fraction(obtuse_vertex.y)])
     B = np.array([Fraction(opposite_edge.origin.x), Fraction(opposite_edge.origin.y)])
-    C = np.array([Fraction(opposite_edge.twin.origin.x), Fraction(opposite_edge.twin.origin.y)])
+    C = np.array([Fraction(opposite_edge.next.origin.x), Fraction(opposite_edge.next.origin.y)])
 
+    """
     # Richtungsvektor der Kante (B -> C)
     edge_vector = C - B
 
@@ -126,7 +128,9 @@ def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     intersection = B + t * edge_vector
 
     # Schritt 3: Rückgabe des Steiner-Punkts und der gegenüberliegenden Kante
-    steiner_vertex = geo.Vertex(x=intersection[0], y=intersection[1])
+    """
+    x,y = find_orthogonal_point(A,B,C)
+    steiner_vertex = geo.Vertex(x=x, y=y)
     return steiner_vertex, opposite_edge
 
 def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face, all_edges: list[geo.HalfEdge], changed_edge : geo.HalfEdge, result: Result) -> list[geo.Face]:
@@ -228,3 +232,67 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     faces = list(filter(None,[face1, face2]))
 
     return opposite_face, faces
+
+
+def find_orthogonal_point(A, B, C):
+    """
+    Find the point S on line segment BC such that SA is orthogonal to BC.
+
+    Parameters:
+        A (tuple): Coordinates of point A as (x_A, y_A) using Fraction.
+        B (tuple): Coordinates of point B as (x_B, y_B) using Fraction.
+        C (tuple): Coordinates of point C as (x_C, y_C) using Fraction.
+
+    Returns:
+        tuple: Coordinates of point S as (x_S, y_S) using Fraction.
+    """
+    # Extract coordinates
+    x_A, y_A = A
+    x_B, y_B = B
+    x_C, y_C = C
+
+    # Compute the vector BC and BA
+    BC_x = x_C - x_B
+    BC_y = y_C - y_B
+    BA_x = x_A - x_B
+    BA_y = y_A - y_B
+
+    #print("DEBUG: BC vector:", (BC_x, BC_y))
+    #print("DEBUG: BA vector:", (BA_x, BA_y))
+
+    # Orthogonality condition: Project BA onto BC
+    numerator = BC_x * BA_x + BC_y * BA_y
+    denominator = BC_x**2 + BC_y**2
+
+    #print("DEBUG: Numerator (projection):", numerator)
+    #print("DEBUG: Denominator (projection length squared):", denominator)
+
+    if denominator == 0:
+        raise ValueError("Points B and C cannot be the same.")
+
+    # Solve for t (projection scalar)
+    t = Fraction(numerator, denominator)
+
+    #print("DEBUG: Parameter t (projection scalar):", t)
+
+    # Calculate S using t
+    x_S = x_B + t * BC_x
+    y_S = y_B + t * BC_y
+
+    #print("DEBUG: Calculated S (projected point):", (x_S, y_S))
+
+    # Verify orthogonality by checking dot product of SA and BC
+    SA_x = x_A - x_S
+    SA_y = y_A - y_S
+
+    #print("DEBUG: SA vector:", (SA_x, SA_y))
+
+    # Dot product
+    dot_product = SA_x * BC_x + SA_y * BC_y
+    #print("DEBUG: Dot product (should be 0):", dot_product)
+
+    if dot_product != 0:
+        raise ValueError("Calculation error: SA is not orthogonal to BC. Check inputs and logic.")
+
+    # Return result as Fractions
+    return Fraction(x_S), Fraction(y_S)

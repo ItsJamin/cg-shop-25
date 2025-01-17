@@ -265,7 +265,7 @@ import math
 
 def angle_between_edges(edge1, edge2):
     """
-    Berechnet den Winkel im Uhrzeigersinn zwischen zwei Kanten.
+    Berechnet den Winkel gegen Uhrzeigersinn zwischen zwei Kanten.
 
     Parameter:
         edge1 (HalfEdge): Die erste Kante.
