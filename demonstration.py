@@ -3,6 +3,7 @@ import inpout as inp
 import geometry as geo
 import algorithms as alg
 import traceback
+import sys
 
 if __name__ == '__main__':
 
@@ -19,6 +20,8 @@ if __name__ == '__main__':
     # - cgshop2025_examples_simple-polygon-exterior-20_60_5da99fdb.instance.json
     # - cgshop2025_examples_simple-polygon_40_986defab.instance.json
     # - cgshop2025_examples_ortho_80_f9b89ad1.instance.json
+
+    #sys.set_int_max_str_digits(99000)
 
     print("Starting...")
     file = "cgshop2025_examples_simple-polygon_40_986defab.instance.json"#

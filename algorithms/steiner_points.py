@@ -17,10 +17,12 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
     i = 0
     try:
         while len(faces_to_look_at) > 0:
-            i += 1
             face = faces_to_look_at.pop()
-            print("--",faces_to_look_at)
-            print("--", face)
+            print(f"[DEBUG] {i} Faces abgehakt.")
+            print(f"[DEBUG] {len(faces_to_look_at)} Faces verbleibend.")
+            i += 1
+            #print("--",faces_to_look_at)
+            #print("--", face)
 
             if not geo.is_non_obtuse_triangle(face):
                 if len(face._get_vertices()) == 4:  # should be 4-polygon
@@ -64,9 +66,12 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                             faces_to_look_at.remove(changed_edge.twin.face)
             else:
                 result.step(face, color=vis.CF_VALID)
-            if i < 0:
+            if i > 300 and False:
+                obj, color = result.v_elements.pop()
+                result.v_elements.append((obj, "blue"))
                 vis.show_result(problem, result)
-                i = 0
+                result.v_elements.pop()
+                result.v_elements.append((obj, color))
     except Exception as e:
         print(e)
         #vis.show_result(problem, result, show_faces=True)
@@ -98,7 +103,7 @@ def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     for edge in edges:
         angle = geo.angle_between_edges(edge.prev.twin, edge)
         if angle > max_angle:
-            print("angle", angle, edge.origin)
+            print("angle", angle)
             max_angle = angle
             obtuse_vertex = edge.origin
             opposite_edge = edge.next
@@ -166,11 +171,12 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
             result.step(edge, color=vis.CF_ERROR)
             raise Exception(e)
         if new_face.is_clockwise():
-            result.step(new_face, color=vis.CF_CHECK)
             if len(new_face.vertices) > 3: # the trapezoide should be handled first
+                result.step(new_face, color=vis.CF_CHECK)
                 return_faces.insert(0, new_face)
             else:
-                return_faces.append(new_face)
+                result.step(new_face, color=vis.CF_VALID)
+
 
     return return_faces
 def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
@@ -184,7 +190,7 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
     for edge in edges:
         angle = geo.angle_between_edges(edge.twin, edge.next)
         print(angle)
-        if np.isclose(angle, 180): #TODO: ???
+        if np.isclose(angle, 180):
             # Triangulate
             new_edge = geo.HalfEdge(edge.next.origin, edge.next.next.next.origin)
             geo.connect_to_grid(new_edge)
@@ -196,6 +202,8 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
             
             if len(faces) < 2:
                 raise Exception("Quadrangle not properly divided", faces)
+            
+            break
 
 
     return faces
@@ -221,8 +229,8 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90:
         return opposite_face, []
 
-    print("Obtuse Edge 1: ", obtuse_edge)
-    print("Obtuse Edge 2: ", opposite_obtuse_edge)
+    #print("Obtuse Edge 1: ", obtuse_edge)
+    #print("Obtuse Edge 2: ", opposite_obtuse_edge)
 
 
     edge_to_remove = obtuse_edge.next
@@ -247,7 +255,7 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
 
     current_n = new_edge
     for i in range(3):
-        print(current_n)
+        #print(current_n)
         current_n = current_n.next
 
     faces = list(filter(None,[face1, face2]))
