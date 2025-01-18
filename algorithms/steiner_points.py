@@ -35,7 +35,7 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                         result.step(face, color=vis.CF_ERROR)
                         raise Exception(f"Wrong Face (Quadrangle with no 180 degree angle) ({face._get_vertices()})")
                 elif len(face._get_vertices()) == 3:
-                    if swap_edge and random.random() > 0.1:
+                    if swap_edge and random.random() > 0.4:
                         opposite_face, new_faces = _swap_edges(face)
                         if len(new_faces) > 0:
                             if opposite_face in faces_to_look_at:
@@ -45,7 +45,7 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                                 if f:
                                     faces_to_look_at.append(f)
                                     result.step(f, color=vis.CF_CHECK)
-                        continue
+                            continue
                     steiner_point, changed_edge = calculate_steiner_point(face)
                     if steiner_point:               
                         if changed_edge in result.g_edges:
@@ -64,7 +64,7 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                             faces_to_look_at.remove(changed_edge.twin.face)
             else:
                 result.step(face, color=vis.CF_VALID)
-            if i > 2:
+            if i < 0:
                 vis.show_result(problem, result)
                 i = 0
     except Exception as e:
@@ -201,6 +201,7 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
     return faces
 
 def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
+    assert geo.is_valid_triangle(face.edge), "face must be triangle for swap edge"
     obtuse_edge = geo.get_obtuse_edge(face)
 
     if not obtuse_edge:
@@ -212,9 +213,16 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     if not opposite_face or not opposite_face.is_clockwise() or not geo.is_valid_triangle(opposite_face.edge):
         return opposite_face, []
     
-    # needs exit condition because it would do it infinetly
-    if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90 and random.random() < 0.4:
+    # if it is a constraint or boundary, it is not allowed to be swapped.
+    if opposite_obtuse_edge.is_constraint:
         return opposite_face, []
+    
+    # needs exit condition because it would do it infinetly
+    if geo.angle_between_edges(opposite_obtuse_edge.prev.twin, opposite_obtuse_edge) <= 90:
+        return opposite_face, []
+
+    print("Obtuse Edge 1: ", obtuse_edge)
+    print("Obtuse Edge 2: ", opposite_obtuse_edge)
 
 
     edge_to_remove = obtuse_edge.next
@@ -226,10 +234,25 @@ def _swap_edges(face: geo.Face) -> tuple[geo.Face, list[geo.Face]]:
     edge_to_remove.twin.prev.next = edge_to_remove.next
     edge_to_remove.twin.next.prev = edge_to_remove.prev
 
+    current_n = edge_to_remove.next
+    current_p = edge_to_remove.next
+    for _ in range(4):
+        current_n = current_n.next
+        current_p = current_p.prev
+    
+    assert current_n == current_p == edge_to_remove.next, "SwapEdge outer bound is not a valid 4-polygon"
+
     new_edge = geo.HalfEdge(obtuse_edge.origin, opposite_obtuse_edge.origin)
     face1, face2 = geo.connect_to_grid(new_edge)
 
+    current_n = new_edge
+    for i in range(3):
+        print(current_n)
+        current_n = current_n.next
+
     faces = list(filter(None,[face1, face2]))
+
+    assert len(faces) == 2, f"Swapping two triangles should give back two triangles, but {len(faces)} was given"
 
     return opposite_face, faces
 

@@ -49,7 +49,7 @@ class HalfEdge:
         elif not self.twin and endpoint:
             if all([i == j for i, j in zip(origin.position(), endpoint.position())]):
                 raise Exception("HalfEdge darf nicht auf gleichen Punkt zeigen", origin.position(), endpoint.position())
-            self.twin = HalfEdge(endpoint, twin=self, reference_from_below=reference_from_below)
+            self.twin = HalfEdge(endpoint, twin=self, reference_from_below=reference_from_below, is_constraint=is_constraint)
         self.next = next
         self.prev = prev
         self.face = face

@@ -9,7 +9,7 @@ import math
 
 if __name__ == '__main__':
 
-    """
+    
     vis.debug_edges([
     ((1000000, 422972), (383537, 0)),
     ((383537, 0), (0, 0)),
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 ]
 , delay=3
     )
-    """
+    
     
     
     # Calculate Steiner Point
