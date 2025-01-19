@@ -18,8 +18,6 @@ G
 Using a DCEL structure for the geometric representation we experimented with different approaches and techniques to solve this problem.
 
 Our final process looks roughly like this:
-![Second Example](https://github.com/user-attachments/assets/83917350-a56a-4129-99dd-16c4d7cdfa5b)
-
 
 1. Top-Down Greedy-Triangulation
 
@@ -28,6 +26,9 @@ Triangulate the given polygon.
 2. Steiner-Point-Triangulation
 
 Take an obtuse triangulation and divide it using an orthogonal from the opposite edge of the obtuse angle to the obtuse angle.
+
+![Example Solution from us](https://github.com/user-attachments/assets/b002704e-41b2-4b09-b18b-406ea2b03508)
+
 
 3. Other techniques:
 
