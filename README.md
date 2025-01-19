@@ -18,7 +18,6 @@ G
 Using a DCEL structure for the geometric representation we experimented with different approaches and techniques to solve this problem.
 
 Our final process looks roughly like this:
-![First Example](https://github.com/user-attachments/assets/e4c493d2-dc0c-4113-94a2-e58ca7388054)
 ![Second Example](https://github.com/user-attachments/assets/83917350-a56a-4129-99dd-16c4d7cdfa5b)
 
 
