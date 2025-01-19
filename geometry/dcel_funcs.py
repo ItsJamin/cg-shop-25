@@ -263,7 +263,7 @@ def count_same_endpoints(edge1: HalfEdge, edge2: HalfEdge) -> int:
 
 import math
 
-def angle_between_edges(edge1, edge2):
+def angle_between_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     """
     Berechnet den Winkel gegen Uhrzeigersinn zwischen zwei Kanten.
 

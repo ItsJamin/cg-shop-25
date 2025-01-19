@@ -23,6 +23,10 @@ if __name__ == '__main__':
     # - cgshop2025_examples_ortho_80_f9b89ad1.instance.json
 
     #sys.set_int_max_str_digits(99000)
+    # Optimierungsmöglichkeiten
+    # angle-between-edges möglichst wenig benutzt
+    # -> durch effizientere funktion ersetzen
+    # parallelisieren (?)
 
     print("Starting...")
     file = "cgshop2025_examples_simple-polygon_40_986defab.instance.json"

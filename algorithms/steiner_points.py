@@ -161,6 +161,7 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
         if steiner_point.x == point.x and steiner_point.y == point.y:
             return []
 
+    
     # Create Edges from the Steiner Point to the other points
     for edge in edges:
         new_edge = geo.HalfEdge(edge.origin, steiner_point)
@@ -169,6 +170,9 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
         new_edges.append(new_edge)
         result.g_edges.append(new_edge)
         result.step(new_edge, color=vis.CL_NORMAL)  # Visualize the new edge
+    
+        
+    # TODO: manually connect without checking point edges
 
     # Create new faces for the triangulation
     return_faces = []
@@ -196,23 +200,37 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
     faces = []
 
     for edge in edges:
-        angle = geo.angle_between_edges(edge.twin, edge.next)
-        print(angle)
-        if np.isclose(angle, 180):
+        #angle = geo.angle_between_edges(edge.twin, edge.next)
+        #print(angle)
+        if are_collinear(edge.twin, edge.next):
             # Triangulate
             new_edge = geo.HalfEdge(edge.next.origin, edge.next.next.next.origin)
-            geo.connect_to_grid(new_edge)
+            
+            #geo.connect_to_grid(new_edge)
 
-            if new_edge.face:
+            new_edge.origin.edges.append(new_edge)
+            new_edge.twin.origin.edges.append(new_edge.twin)
+
+
+            edge.next.prev = new_edge.twin
+            edge.next.next.next = new_edge.twin
+            new_edge.twin.next = edge.next
+            new_edge.twin.prev = edge.next.next
+
+            new_edge.prev = edge
+            new_edge.next = edge.prev
+            edge.next = new_edge
+            edge.prev.prev = new_edge
+
+            if geo.is_valid_triangle(new_edge):
+                face = geo.Face(new_edge, reference_from_below=True)
                 faces.append(new_edge.face)
-            if new_edge.twin.face:
+            if geo.is_valid_triangle(new_edge.twin):
+                face = geo.Face(new_edge.twin, reference_from_below=True)
                 faces.append(new_edge.twin.face)
             
-            if len(faces) < 2:
-                raise Exception("Quadrangle not properly divided", faces)
-            
+            assert len(faces) == 2, f"Quadrangle not properly divided {faces}"
             break
-
 
     return faces
 
@@ -335,3 +353,9 @@ def find_orthogonal_point(A, B, C):
 
     # Return result as Fractions
     return geo.create_fraction(x_S), geo.create_fraction(y_S)
+
+
+def are_collinear(u : geo.HalfEdge, v : geo.HalfEdge):
+    u = u.direction()
+    v = v.direction()
+    return u[0] * v[1] == u[1] * v[0]
