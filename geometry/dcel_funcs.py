@@ -38,28 +38,6 @@ def is_valid_triangle(edge: HalfEdge) -> bool:
 
 def is_non_obtuse_triangle(face: Face) -> bool:
 
-    if not is_valid_triangle(face.edge):
-        return False
-
-    A = face.edge.origin.position()
-    B = face.edge.next.origin.position()
-    C = face.edge.next.next.origin.position()
-
-    AB = (B[0] - A[0], B[1] - A[1])
-    AC = (C[0] - A[0], C[1] - A[1])
-    BC = (C[0] - B[0], C[1] - B[1])
-    BA = (A[0] - B[0], A[1] - B[1])
-    CA = (A[0] - C[0], A[1] - C[1])
-    CB = (B[0] - C[0], B[1] - C[1])
-
-    # Skalares Produkt berechnen
-    dot_AB_AC = AB[0] * AC[0] + AB[1] * AC[1]
-    dot_BC_BA = BC[0] * BA[0] + BC[1] * BA[1]
-    dot_CA_CB = CA[0] * CB[0] + CA[1] * CB[1]
-
-    # Wenn eines der Skalarprodukte negativ ist, hat das Dreieck einen stumpfen Winkel
-    return not (dot_AB_AC < 0 or dot_BC_BA < 0 or dot_CA_CB < 0)
-
     edge = face.edge
     if is_valid_triangle(edge):
         e1 = edge
@@ -297,34 +275,25 @@ def angle_between_edges(edge1 : HalfEdge, edge2 : HalfEdge):
     Rückgabewert:
         float: Der Winkel zwischen den Kanten in Grad, im Uhrzeigersinn.
     """
-    # Richtung der Kanten als Vektoren abrufen
-    dir1 = edge1.direction()
-    dir2 = edge2.direction()
+    dir1 = edge1.direction().astype(float)
+    dir2 = edge2.direction().astype(float)
 
-    # Berechne das Kreuzprodukt
-    cross_product = dir1[0] * dir2[1] - dir1[1] * dir2[0]
-    
-    # Berechne das Skalarprodukt (dot product)
-    dot_product = dir1[0] * dir2[0] + dir1[1] * dir2[1]
 
-    # Berechne die Längen (Beträge) der Vektoren
-    magnitude1 = math.sqrt(dir1[0]**2 + dir1[1]**2)
-    magnitude2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
+    # Normalize the direction vectors
+    dir1 = dir1 / np.linalg.norm(dir1)
+    dir2 = dir2 / np.linalg.norm(dir2)
 
-    # Berechne den Winkel in Radiant
-    cosine_value = dot_product / (magnitude1 * magnitude2)
-    cosine_value = max(-1.0, min(1.0, cosine_value))  # Clamp to [-1, 1]
-    angle_radians = math.acos(cosine_value)
+    # Calculate the dot product and the cross product
+    dot_product = np.dot(dir1, dir2)
+    cross_product = np.cross(dir1, dir2)
 
-    # Wenn das Kreuzprodukt negativ ist, dann ist der Winkel im Uhrzeigersinn
-    if cross_product < 0:
-        angle_radians = -angle_radians
-    
-    # Konvertiere den Winkel in Grad
-    angle_degrees = math.degrees(angle_radians)
+    # Calculate the angle in radians using arctan2 for orientation
+    angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns the oriented angle
 
-    return (360+angle_degrees) % 360
+    # Cap angle in range 0 to 360
+    angle = angle % 360#interesting modulo behavior where it needs it two times
 
+    return angle
 
 def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool = True):
     """

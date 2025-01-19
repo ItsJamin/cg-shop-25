@@ -68,7 +68,7 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                             faces_to_look_at.remove(changed_edge.twin.face)
             else:
                 result.step(face, color=vis.CF_VALID)
-            if i > 300 and False:
+            if i == 325:
                 obj, color = result.v_elements.pop()
                 result.v_elements.append((obj, "blue"))
                 vis.show_result(problem, result)
@@ -213,6 +213,10 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
         n1.is_constraint = True
         n2.is_constraint = True
     
+    if changed_edge.twin.is_boundary:
+        n1.twin.is_boundary = True
+        n2.twin.is_boundary = True
+    
 
     # Create new faces for the triangulation
     return_faces = []
@@ -225,11 +229,12 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
             print(edge, "WWWWWW")
             result.step(edge, color=vis.CF_ERROR)
             raise Exception(e)
-        if len(new_face.vertices) > 3: # the trapezoide should be handled first
-            result.step(new_face, color=vis.CF_CHECK)
-            return_faces.insert(0, new_face)
-        else:
-            result.step(new_face, color=vis.CF_VALID)
+        if not edge.is_boundary:
+            if len(new_face.vertices) > 3: # the trapezoide should be handled first
+                result.step(new_face, color=vis.CF_CHECK)
+                return_faces.insert(0, new_face)
+            else:
+                result.step(new_face, color=vis.CF_VALID)
 
 
     return return_faces

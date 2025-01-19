@@ -35,7 +35,7 @@ if __name__ == '__main__':
     for i in range(1):
         #file = inp.get_random_file_from_dir()
         problem = inp.load_problem(file, folder)
-        vis.show_problem(problem)
+        #vis.show_problem(problem)
         try: 
             solution = alg.non_obtuse_triangulation(problem)
             #vis.show_problem(problem)
