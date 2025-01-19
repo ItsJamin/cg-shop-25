@@ -38,10 +38,10 @@ class Result():
             self.edges.append([origin, twin_origin])
         
         
-        print("--- Vollständige Repräsentation des Problems ---")
-        print(" - Alle normalen Punkte: ", *zip(self.points_x, self.points_y))
-        print(" - Alle Steinerpunkte: ", *zip(self.steiner_points_x, self.steiner_points_y))
-        print(" - Alle Edges: ", self.edges)
+        #print("--- Vollständige Repräsentation des Problems ---")
+        #print(" - Alle normalen Punkte: ", *zip(self.points_x, self.points_y))
+        #print(" - Alle Steinerpunkte: ", *zip(self.steiner_points_x, self.steiner_points_y))
+        #print(" - Alle Edges: ", self.edges)
 
     def _get_index_of_point(self, point : geo.Vertex):
         point_x = convert_float(point.x)
@@ -79,7 +79,7 @@ class Result():
 
 def convert_float(value):
     # Versuche zu prüfen, ob es sich um einen Integer handelt
-    print(value, type(value))
+    #print(value, type(value))
     if type(value) == int:
         return int(value)  # Gibt den Wert als Integer zurück
     elif type(geo.Fraction):

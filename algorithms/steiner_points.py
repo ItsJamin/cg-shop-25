@@ -68,7 +68,8 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                             faces_to_look_at.remove(changed_edge.twin.face)
             else:
                 result.step(face, color=vis.CF_VALID)
-            if i == 325:
+            if i > 300 and len(faces_to_look_at) > 7:
+                raise Exception("Too long, skipping for now")
                 obj, color = result.v_elements.pop()
                 result.v_elements.append((obj, "blue"))
                 vis.show_result(problem, result)
