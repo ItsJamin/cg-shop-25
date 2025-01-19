@@ -1,7 +1,6 @@
 import geometry as geo
 import numpy as np
 
-
 from .problem import Problem
 
 class Result():
@@ -80,8 +79,14 @@ class Result():
 
 def convert_float(value):
     # Versuche zu prüfen, ob es sich um einen Integer handelt
-    if type(value) == int or value.is_integer():
+    print(value, type(value))
+    if type(value) == int:
         return int(value)  # Gibt den Wert als Integer zurück
+    elif type(geo.Fraction):
+        if value.denominator == 1:
+            return int(value.numerator)
+        else:
+            return str(value)
     else:
         # Konvertiere den Float in eine Fraction
         fraction = geo.create_fraction(value).limit_denominator()

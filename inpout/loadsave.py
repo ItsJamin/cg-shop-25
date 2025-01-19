@@ -14,7 +14,6 @@ def load_problem(filename : str, directory = "assets/") -> Problem:
     return problem_instance
 
 def save_result(result : Result, directory = "assets/final_results/"):
-    # TODO: create result fiel from result object
 
     data = {
         "content_type": "CG_SHOP_2025_Solution",

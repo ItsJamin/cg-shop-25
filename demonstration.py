@@ -29,8 +29,8 @@ if __name__ == '__main__':
     # parallelisieren (?)
 
     print("Starting...")
-    file = "cgshop2025_examples_simple-polygon_40_986defab.instance.json"
-    folder = "assets/"
+    file = "ortho_10_d2723dcc.instance.json"
+    folder = "assets/final_tasks/"
 
     for i in range(1):
         #file = inp.get_random_file_from_dir()
@@ -45,6 +45,11 @@ if __name__ == '__main__':
             
             # visualize the problem and animate the solution steps
             vis.animate_algorithm(problem, solution, interval=500, show_faces=True)
+
+            if folder == "assets/final_tasks/":
+                solution.convert_data()
+                inp.save_result(solution, "assets/final_results/")
+                vis.show_results_by_final_data(solution)
         except Exception as e:
             print(e)
             print(file)

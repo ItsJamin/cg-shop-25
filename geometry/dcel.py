@@ -1,7 +1,12 @@
 import numpy as np
 from fractions import Fraction
 from functools import lru_cache
-from math import gcd
+import math
+import fractions
+import gmpy2
+
+math.gcd = gmpy2.gcd
+
 
 class Vertex:
     def __init__(self, 
@@ -173,14 +178,10 @@ class Face:
 # Fractions
 #
 
-@lru_cache(maxsize=None)
+#@lru_cache(maxsize=None)
 def create_fraction(*args):
     return Fraction(*args)
 
-    #if(len(args)==1):
-    #    return float(args[0])
-    #else:
-    #    return float(args[0]/args[1])
 
 def binary_gcd(a, b):
     """
@@ -216,5 +217,6 @@ def binary_gcd(a, b):
             a, b = b, a
         b -= a
     return a << shift
+
 
 

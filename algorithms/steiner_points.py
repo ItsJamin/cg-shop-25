@@ -244,6 +244,7 @@ def divide_steiner_point_quadrangle(face: geo.Face) -> list[geo.Face]:
     Searches for the steiner point and draws line to opposite point.
     """
     edges = face._get_edges()
+    edges = [edges[-1]] + edges[:1]
     faces = []
 
     for edge in edges:
