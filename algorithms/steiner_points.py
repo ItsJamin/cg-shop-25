@@ -153,16 +153,18 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
 
     geo.loose_edge(changed_edge)
 
-    edges = [face.edge, face.edge.next, face.edge.next.next]
+    #edges = [changed_edge, changed_edge.next, changed_edge.next.next]
+    #[face.edge, face.edge.next, face.edge.next.next]
     new_edges = []
 
     # Check for existing steiner point
-    for point in [e.origin for e in edges]:
-        if steiner_point.x == point.x and steiner_point.y == point.y:
-            return []
+    #for point in [e.origin for e in edges]:
+    #    if steiner_point.x == point.x and steiner_point.y == point.y:
+    #        return []
 
     
     # Create Edges from the Steiner Point to the other points
+    """
     for edge in edges:
         new_edge = geo.HalfEdge(edge.origin, steiner_point)
         geo.connect_to_grid(new_edge)
@@ -170,24 +172,64 @@ def add_steiner_point_to_triangulation(steiner_point: geo.Vertex, face: geo.Face
         new_edges.append(new_edge)
         result.g_edges.append(new_edge)
         result.step(new_edge, color=vis.CL_NORMAL)  # Visualize the new edge
+    """
+    n1 = geo.HalfEdge(changed_edge.origin,steiner_point)
+    n2 = geo.HalfEdge(steiner_point, changed_edge.next.origin)
+    new_edge = geo.HalfEdge(steiner_point, changed_edge.prev.origin)
+
+    n1.origin.edges.append(n1)
+    n1.twin.origin.edges.append(n1.twin)
+    n2.origin.edges.append(n2)
+    n2.twin.origin.edges.append(n2.twin)
+    new_edge.origin.edges.append(new_edge)
+    new_edge.twin.origin.edges.append(new_edge.twin)
+
+
+    n1.next = new_edge
+    n1.prev = changed_edge.prev
+    n1.twin.next = changed_edge.twin.next
+    n1.twin.prev = n2.twin
+
+    n2.next = changed_edge.next
+    n2.prev = new_edge.twin
+    n2.twin.next = n1.twin
+    n2.twin.prev = changed_edge.twin.prev
+
+    new_edge.next = changed_edge.prev
+    new_edge.prev = n1
+    new_edge.twin.next = n2
+    new_edge.twin.prev = changed_edge.next
+
+    n1.prev.next = n1
+    n2.next.prev = n2
+    new_edge.next.prev = new_edge
+    new_edge.twin.prev.next = new_edge.twin
+    n1.twin.next.prev = n1.twin
+    n2.twin.prev.next = n2.twin
+
+    new_edges = [n1.twin,n2,new_edge]
+
+    if changed_edge.is_constraint:
+        n1.is_constraint = True
+        n2.is_constraint = True
     
-        
-    # TODO: manually connect without checking point edges
 
     # Create new faces for the triangulation
     return_faces = []
     for edge in new_edges:
+        result.step(edge, color=vis.CL_NORMAL)
+        result.g_edges.append(edge)
         try:
             new_face = geo.Face(edge, reference_from_below=True)
         except Exception as e:
+            print(edge, "WWWWWW")
             result.step(edge, color=vis.CF_ERROR)
             raise Exception(e)
-        if new_face.is_clockwise():
-            if len(new_face.vertices) > 3: # the trapezoide should be handled first
-                result.step(new_face, color=vis.CF_CHECK)
-                return_faces.insert(0, new_face)
-            else:
-                result.step(new_face, color=vis.CF_VALID)
+        if len(new_face.vertices) > 3: # the trapezoide should be handled first
+            result.step(new_face, color=vis.CF_CHECK)
+            return_faces.insert(0, new_face)
+        else:
+            result.step(new_face, color=vis.CF_VALID)
 
 
     return return_faces

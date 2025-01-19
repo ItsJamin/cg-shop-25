@@ -37,6 +37,29 @@ def is_valid_triangle(edge: HalfEdge) -> bool:
     return current_n == edge and current_p == edge
 
 def is_non_obtuse_triangle(face: Face) -> bool:
+
+    if not is_valid_triangle(face.edge):
+        return False
+
+    A = face.edge.origin.position()
+    B = face.edge.next.origin.position()
+    C = face.edge.next.next.origin.position()
+
+    AB = (B[0] - A[0], B[1] - A[1])
+    AC = (C[0] - A[0], C[1] - A[1])
+    BC = (C[0] - B[0], C[1] - B[1])
+    BA = (A[0] - B[0], A[1] - B[1])
+    CA = (A[0] - C[0], A[1] - C[1])
+    CB = (B[0] - C[0], B[1] - C[1])
+
+    # Skalares Produkt berechnen
+    dot_AB_AC = AB[0] * AC[0] + AB[1] * AC[1]
+    dot_BC_BA = BC[0] * BA[0] + BC[1] * BA[1]
+    dot_CA_CB = CA[0] * CB[0] + CA[1] * CB[1]
+
+    # Wenn eines der Skalarprodukte negativ ist, hat das Dreieck einen stumpfen Winkel
+    return not (dot_AB_AC < 0 or dot_BC_BA < 0 or dot_CA_CB < 0)
+
     edge = face.edge
     if is_valid_triangle(edge):
         e1 = edge
