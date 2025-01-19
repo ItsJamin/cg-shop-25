@@ -30,7 +30,8 @@ class HalfEdge:
                  prev : "HalfEdge" = None,
                  face : "Face" = None,
                  reference_from_below: bool = False,
-                 is_constraint: bool = False
+                 is_constraint: bool = False,
+                 is_boundary: bool = False,
                  ):
         """
         Two HalfEdges represent a single edge. The direction of a HalfEdge is determined by the origin.
@@ -56,6 +57,7 @@ class HalfEdge:
         self.prev = prev
         self.face = face
         self.is_constraint = is_constraint
+        self.is_boundary = is_boundary
 
         if not self.twin:
             raise Warning("HalfEdge ohne Zwilling definiert.")

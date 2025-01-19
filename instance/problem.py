@@ -55,6 +55,9 @@ class Problem():
         self.g_region_boundary = geo.Face(start_edge)
         if self.g_region_boundary.is_clockwise():
             self.g_region_boundary = geo.Face(start_edge.twin)
+        
+        for e in self.g_region_boundary._get_edges():
+            e.is_boundary = True
 
         # additional constaints as HalfEdges
         for constraint in self.additional_constraints:

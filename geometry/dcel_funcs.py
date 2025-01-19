@@ -298,32 +298,25 @@ def angle_between_edges(edge1 : HalfEdge, edge2 : HalfEdge):
         float: Der Winkel zwischen den Kanten in Grad, im Uhrzeigersinn.
     """
     # Richtung der Kanten als Vektoren abrufen
-    dir1 = edge1.direction()
-    dir2 = edge2.direction()
+    dir1 = edge1.direction().astype(float)
+    dir2 = edge2.direction().astype(float)
 
-    # Berechne das Kreuzprodukt
-    cross_product = dir1[0] * dir2[1] - dir1[1] * dir2[0]
-    
-    # Berechne das Skalarprodukt (dot product)
-    dot_product = dir1[0] * dir2[0] + dir1[1] * dir2[1]
 
-    # Berechne die Längen (Beträge) der Vektoren
-    magnitude1 = math.sqrt(dir1[0]**2 + dir1[1]**2)
-    magnitude2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
+    # Normalize the direction vectors
+    dir1 = dir1 / np.linalg.norm(dir1)
+    dir2 = dir2 / np.linalg.norm(dir2)
 
-    # Berechne den Winkel in Radiant
-    cosine_value = dot_product / (magnitude1 * magnitude2)
-    cosine_value = max(-1.0, min(1.0, cosine_value))  # Clamp to [-1, 1]
-    angle_radians = math.acos(cosine_value)
+    # Calculate the dot product and the cross product
+    dot_product = np.dot(dir1, dir2)
+    cross_product = np.cross(dir1, dir2)
 
-    # Wenn das Kreuzprodukt negativ ist, dann ist der Winkel im Uhrzeigersinn
-    if cross_product < 0:
-        angle_radians = -angle_radians
-    
-    # Konvertiere den Winkel in Grad
-    angle_degrees = math.degrees(angle_radians)
+    # Calculate the angle in radians using arctan2 for orientation
+    angle = np.degrees(np.arctan2(cross_product, dot_product))  # Arctan2 returns the oriented angle
 
-    return (360+angle_degrees) % 360
+    # Cap angle in range 0 to 360
+    angle = angle % 360#interesting modulo behavior where it needs it two times
+
+    return angle
 
 
 def is_edge_in_boundary(edge : HalfEdge, face : Face, counter_clockwise : bool = True):
