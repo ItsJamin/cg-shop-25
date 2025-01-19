@@ -1,5 +1,5 @@
 from .dcel import *
-from fractions import Fraction
+
 import math
 
 def connect_edges(edge1: HalfEdge, edge2: HalfEdge):
@@ -154,12 +154,12 @@ def get_min_max_angle_edges(base_edge: HalfEdge, edge_list: list[HalfEdge]) -> t
     If the edge_list is empty, the function returns (None, None).
     """
     base_dir = base_edge.direction()
-    base_dir = (Fraction(base_dir[0]), Fraction(base_dir[1]))
+    base_dir = (create_fraction(base_dir[0]), create_fraction(base_dir[1]))
 
     angles = []
     for edge in edge_list:
         edge_dir = edge.direction()
-        edge_dir = (Fraction(edge_dir[0]), Fraction(edge_dir[1]))
+        edge_dir = (create_fraction(edge_dir[0]), create_fraction(edge_dir[1]))
 
         dot_product = base_dir[0] * edge_dir[0] + base_dir[1] * edge_dir[1]
         cross_product = base_dir[0] * edge_dir[1] - base_dir[1] * edge_dir[0]
@@ -192,7 +192,7 @@ def edges_intersect(edge1: HalfEdge, edge2: HalfEdge, on_edge_is_intersection=Tr
     on_edge_is_intersection: If True, edges that end in a point on the other edge (except endpoints) are counted.
     """
     def area(p1, p2, p3):
-        return Fraction(p1[0]) * (p2[1] - p3[1]) + Fraction(p2[0]) * (p3[1] - p1[1]) + Fraction(p3[0]) * (p1[1] - p2[1])
+        return create_fraction(p1[0]) * (p2[1] - p3[1]) + create_fraction(p2[0]) * (p3[1] - p1[1]) + create_fraction(p3[0]) * (p1[1] - p2[1])
 
     def on_segment(p1, p2, q):
         return (min(p1[0], p2[0]) <= q[0] <= max(p1[0], p2[0]) and

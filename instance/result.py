@@ -1,6 +1,6 @@
 import geometry as geo
 import numpy as np
-from fractions import Fraction
+
 
 from .problem import Problem
 
@@ -84,7 +84,7 @@ def convert_float(value):
         return int(value)  # Gibt den Wert als Integer zurück
     else:
         # Konvertiere den Float in eine Fraction
-        fraction = Fraction(value).limit_denominator()
+        fraction = geo.create_fraction(value).limit_denominator()
         return str(fraction)
     
 def convert_boundary_to_edge_list(boundary):
@@ -93,7 +93,7 @@ def convert_boundary_to_edge_list(boundary):
 def convert_fraction_to_number(fraction_str):
     try:
         # Konvertiere den String in eine Fraction
-        fraction = Fraction(fraction_str)
+        fraction = geo.create_fraction(fraction_str)
         
         # Überprüfe, ob der Wert eine ganze Zahl ist
         if fraction.denominator == 1:

@@ -4,6 +4,7 @@ import geometry as geo
 import algorithms as alg
 import traceback
 import sys
+import time
 
 if __name__ == '__main__':
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     #sys.set_int_max_str_digits(99000)
 
     print("Starting...")
-    file = "cgshop2025_examples_simple-polygon_40_986defab.instance.json"#
+    file = "cgshop2025_examples_simple-polygon_40_986defab.instance.json"
     folder = "assets/"
 
     for i in range(1):

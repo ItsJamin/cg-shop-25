@@ -1,5 +1,7 @@
 import numpy as np
 from fractions import Fraction
+from functools import lru_cache
+from math import gcd
 
 class Vertex:
     def __init__(self, 
@@ -7,8 +9,8 @@ class Vertex:
                  y: float,
                  is_constraint: bool = False):
         """Representation of a point, has references to all outgoing points."""
-        self.x = Fraction(x)
-        self.y = Fraction(y)
+        self.x = create_fraction(x)
+        self.y = create_fraction(y)
         self.edges = []
         self.is_constraint = is_constraint
 
@@ -164,4 +166,53 @@ class Face:
     def _get_vertices(self) -> list[Vertex]:
         """Gives all vertices of face in cyclical order."""
         return [edge.origin for edge in self._get_edges()]
+
+#
+# Fractions
+#
+
+@lru_cache(maxsize=None)
+def create_fraction(*args):
+    return Fraction(*args)
+
+    #if(len(args)==1):
+    #    return float(args[0])
+    #else:
+    #    return float(args[0]/args[1])
+
+def binary_gcd(a, b):
+    """
+    Effizienter GCD-Algorithmus basierend auf Stein's Algorithmus.
+    Funktioniert nur mit ganzen Zahlen (int).
+    """
+    # Falls a oder b Fraction-Objekte sind, extrahiere den Zähler
+    if isinstance(a, Fraction):
+        a = abs(a.numerator)
+    elif isinstance(a, float):
+        raise ValueError(f"Invalid input to GCD: {a}. Expected integers or Fractions.")
+    elif isinstance(a, int):
+        a = abs(a)
+
+    if isinstance(b, Fraction):
+        b = abs(b.numerator)
+    elif isinstance(b, float):
+        raise ValueError(f"Invalid input to GCD: {b}. Expected integers or Fractions.")
+    elif isinstance(b, int):
+        b = abs(b)
+
+    if a == 0:
+        return b
+    if b == 0:
+        return a
+
+    # Entferne gemeinsame Faktoren von 2
+    shift = ((a | b) & -((a | b))).bit_length() - 1
+    a >>= a.bit_length() - 1
+    while b != 0:
+        b >>= b.bit_length() - 1
+        if a > b:
+            a, b = b, a
+        b -= a
+    return a << shift
+
 

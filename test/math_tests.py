@@ -1,6 +1,7 @@
 from geometry import Vertex, HalfEdge, Face, connect_to_grid
+import geometry as geo
 from algorithms import calculate_steiner_point, find_orthogonal_point
-from fractions import Fraction
+
 def test_calculate_steiner_point():
     """
     Teste ob calculate_steiner_point in einem gegeben, clockwise orientiertem, stumpfwinkligen Dreieck
@@ -31,11 +32,11 @@ def test_calculate_steiner_point():
     def test_case(A,B,C, expected_steiner_point):
         face = create_triangle(A, B, C)
         steiner_point, opposite_edge = calculate_steiner_point(face) #find_orthogonal_point(A,B,C)
-        steiner_point = (Fraction(steiner_point.x), Fraction(steiner_point.y))
+        steiner_point = (geo.create_fraction(steiner_point.x), geo.create_fraction(steiner_point.y))
 
         assert steiner_point == expected_steiner_point, \
             f"Bei Punkte {A}, {B}, {C} ist {expected_steiner_point} erwartet und {steiner_point} Ergebnis der Funktion."
 
-    test_case((13,3), (14,0), (0,0), (Fraction(13,1), Fraction(0,1)))
-    test_case((5,2), (0,0), (10,0), (Fraction(5,1), Fraction(0,1)))
-    test_case((3,3), (4,5), (1,1), (Fraction("2.68"), Fraction("3.24")))
+    test_case((13,3), (14,0), (0,0), (geo.create_fraction(13,1), geo.create_fraction(0,1)))
+    test_case((5,2), (0,0), (10,0), (geo.create_fraction(5,1), geo.create_fraction(0,1)))
+    test_case((3,3), (4,5), (1,1), (geo.create_fraction("2.68"), geo.create_fraction("3.24")))

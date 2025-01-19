@@ -1,22 +1,24 @@
-from fractions import Fraction
+
 from instance import Problem, Result
 import geometry as geo
 import visualization as vis
 import numpy as np
 import math
 import random
-from fractions import Fraction
 
+import cProfile
 
 random.seed(1)
 
-swap_edge = True
+swap_edge = False
 def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Result):
     # Fix obtuse triangles by placing Steiner points
     # Handling faces_to_look_at as a stack
     i = 0
     try:
         while len(faces_to_look_at) > 0:
+            profiler = cProfile.Profile()
+            profiler.enable()
             face = faces_to_look_at.pop()
             print(f"[DEBUG] {i} Faces abgehakt.")
             print(f"[DEBUG] {len(faces_to_look_at)} Faces verbleibend.")
@@ -72,6 +74,12 @@ def steiner_points(faces_to_look_at, all_edges, problem : Problem, result : Resu
                 vis.show_result(problem, result)
                 result.v_elements.pop()
                 result.v_elements.append((obj, color))
+            profiler.disable()
+            print(f"[DEBUG] Profiling-Ergebnisse:")
+            print("-" * 10)
+            profiler.print_stats(sort="time")
+            print("-" * 10)
+
     except Exception as e:
         print(e)
         #vis.show_result(problem, result, show_faces=True)
@@ -111,9 +119,9 @@ def calculate_steiner_point(face: geo.Face) -> tuple[geo.Vertex, geo.HalfEdge]:
     assert obtuse_vertex is not None and opposite_edge is not None, "Kein stumpfer Winkel gefunden."
 
     # Schritt 2: Berechne den Schnittpunkt der Orthogonalen mit der gegenüberliegenden Kante
-    A = np.array([Fraction(obtuse_vertex.x), Fraction(obtuse_vertex.y)])
-    B = np.array([Fraction(opposite_edge.origin.x), Fraction(opposite_edge.origin.y)])
-    C = np.array([Fraction(opposite_edge.next.origin.x), Fraction(opposite_edge.next.origin.y)])
+    A = np.array([geo.create_fraction(obtuse_vertex.x), geo.create_fraction(obtuse_vertex.y)])
+    B = np.array([geo.create_fraction(opposite_edge.origin.x), geo.create_fraction(opposite_edge.origin.y)])
+    C = np.array([geo.create_fraction(opposite_edge.next.origin.x), geo.create_fraction(opposite_edge.next.origin.y)])
 
     """
     # Richtungsvektor der Kante (B -> C)
@@ -302,7 +310,7 @@ def find_orthogonal_point(A, B, C):
         raise ValueError("Points B and C cannot be the same.")
 
     # Solve for t (projection scalar)
-    t = Fraction(numerator, denominator)
+    t = geo.create_fraction(numerator, denominator)
 
     #print("DEBUG: Parameter t (projection scalar):", t)
 
@@ -326,4 +334,4 @@ def find_orthogonal_point(A, B, C):
         raise ValueError("Calculation error: SA is not orthogonal to BC. Check inputs and logic.")
 
     # Return result as Fractions
-    return Fraction(x_S), Fraction(y_S)
+    return geo.create_fraction(x_S), geo.create_fraction(y_S)
