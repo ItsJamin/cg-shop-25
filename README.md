@@ -1,5 +1,5 @@
 
-Our entry to the [CG:SHOP 2025] Competition.
+Our entry to the [CG:SHOP 2025](https://cgshop.ibr.cs.tu-bs.de/competition/cg-shop-2025/#problem-description) Competition.
 
 # About the task
 
@@ -9,11 +9,15 @@ G
 G
  and can include the addition of Steiner points anywhere in the plane, including on these edges. The placement of Steiner points is particularly challenging because it can affect the geometric properties of adjacent faces, thus complicating the triangulation process. All triangles formed in the solution must be non-obtuse, with each angle not exceeding 90 degrees, and the solution seeks to minimize the total number of Steiner points. This problem is complex due to its geometric constraints and the interdependencies introduced by Steiner points, making it a computationally demanding task likely belonging to the NP-hard class of problems. For a polygon, an example of a Minimum Non-Obtuse Triangulation can be found as Figure 1 in [3], see below.
 
+![image](https://github.com/user-attachments/assets/2640fd49-93e2-410c-be28-7d688b3847f6)
+
+
 # Our solution
 
 Using a DCEL structure for the geometric representation we experimented with different approaches and techniques to solve this problem.
 
 Our final process looks roughly like this:
+![TLI](https://github.com/user-attachments/assets/e4c493d2-dc0c-4113-94a2-e58ca7388054)
 
 1. Top-Down Greedy-Triangulation
 
